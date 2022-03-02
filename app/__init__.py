@@ -116,7 +116,7 @@ def mint():
     return jsonify(tx_hash.hex())
 
 @app.route("/mint")
-def mint():
+def mint2():
     contract_id = request.args.get('contract_id')
     email = request.args.get('email')
     user = User.query.filter_by(email=email).first()
@@ -169,6 +169,4 @@ def retrieve():
     token = request.args.get('token')
     maskedToken = sha1(token)
     user = User.query.filter_by(token=maskedToken)
-
-    user.
 
