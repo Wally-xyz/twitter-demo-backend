@@ -14,4 +14,4 @@ class User(db.Model):
     username = db.Column(db.String)
     address = db.Column(db.String)
     private_key = db.Column(db.String)
-    email = db.Column(db.String)
+    # email = db.Column(db.String)
