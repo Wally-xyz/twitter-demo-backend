@@ -1,11 +1,12 @@
 from flask import Flask, request, jsonify
 import solcx
-from web3 import Web3
+from web3 import Web3, middleware
 import os
 from app.models import *
 import json
 from sendgrid.helpers.mail import Mail
 from sendgrid import SendGridAPIClient
+from web3.gas_strategies.time_based import medium_gas_price_strategy
 
 app = Flask(__name__)
 
@@ -65,13 +66,14 @@ def hello_world():
     contract_interface = compiled_sol["<stdin>:RedditYearinReview"]
     bytecode = contract_interface['bin']
     abi = contract_interface['abi']
-    w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/i9WqOfyE1v7xbnr4_rdSld7Z6UJecfUB"))
+    w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/37SaPgF-UEVyGxqZXtDBMKykQt2Ya4Er"))
     Minter = w3.eth.contract(abi=abi, bytecode=bytecode)
+    gas = int(Minter.constructor().estimateGas() * 1.5)
+    maxPriorityFee = w3.eth.max_priority_fee
     built_txn = Minter.constructor().buildTransaction({
         'nonce': w3.eth.getTransactionCount(w3.eth.account.from_key(os.environ.get("PRIVATE_KEY")).address),
-        'gas': 7000000,
-        'maxFeePerGas': w3.toWei('3', 'gwei'),
-        'maxPriorityFeePerGas': w3.toWei('3', 'gwei'),
+        'gas': gas,
+        'maxPriorityFeePerGas': w3.eth.max_priority_fee,
     })
     signed_txn = w3.eth.account.signTransaction(built_txn, private_key=os.environ.get("PRIVATE_KEY"))
     tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
@@ -84,7 +86,11 @@ def hello_world():
     )
     db.session.add(abi_entry)
     db.session.commit()
-    return 'http://localhost:8000/mint?contract_id=%(contract_id)s' % { "contract_id": tx_hash.hex() }
+    return {
+        'url': 'http://localhost:8000/mint?contract_id=%(contract_id)s' % { "contract_id": tx_hash.hex() },
+        'gas': gas,
+        'maxPriorityFeePerGas': maxPriorityFee,
+    }
 
 @app.route("/mint")
 def mint():
@@ -105,18 +111,19 @@ def mint():
     contract = ABI.query.filter_by(contract_id=contract_id).first_or_404()
     abi = contract.data
     Minter = w3.eth.contract(abi=abi, address=contract.address)
+    maxPriorityFee = w3.eth.max_priority_fee
     built_txn = Minter.functions.mintNFT(address, "0x00").buildTransaction({
         'nonce': w3.eth.getTransactionCount(w3.eth.account.from_key(os.environ.get("PRIVATE_KEY")).address),
         'gas': 7000000,
-        'maxFeePerGas': w3.toWei('3', 'gwei'),
-        'maxPriorityFeePerGas': w3.toWei('3', 'gwei'),
+        'maxFeePerGas': maxPriorityFee+w3.eth.gas_price,
+        'maxPriorityFeePerGas': maxPriorityFee,
     })
     signed_txn = w3.eth.account.signTransaction(built_txn, private_key=os.environ.get("PRIVATE_KEY"))
     tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
     return jsonify(tx_hash.hex())
 
-@app.route("/mint")
-def mint2():
+@app.route("/mint2")
+def mint_email():
     contract_id = request.args.get('contract_id')
     email = request.args.get('email')
     user = User.query.filter_by(email=email).first()
@@ -135,11 +142,14 @@ def mint2():
     contract = ABI.query.filter_by(contract_id=contract_id).first_or_404()
     abi = contract.data
     Minter = w3.eth.contract(abi=abi, address=contract.address)
+    gas = w3.eth.set_gas_price_strategy(medium_gas_price_strategy)
+    maxPriorityFee = w3.eth.max_priority_fee
+    maxFeePerGas = gas + maxPriorityFee
     built_txn = Minter.functions.mintNFT(address, "0x00").buildTransaction({
         'nonce': w3.eth.getTransactionCount(w3.eth.account.from_key(os.environ.get("PRIVATE_KEY")).address),
-        'gas': 7000000,
-        'maxFeePerGas': w3.toWei('3', 'gwei'),
-        'maxPriorityFeePerGas': w3.toWei('3', 'gwei'),
+        'gas': gas,
+        'maxFeePerGas': maxFeePerGas,
+        'maxPriorityFeePerGas': maxPriorityFee,
     })
     signed_txn = w3.eth.account.signTransaction(built_txn, private_key=os.environ.get("PRIVATE_KEY"))
     tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
