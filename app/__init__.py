@@ -1,14 +1,16 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import solcx
-from web3 import Web3, middleware
+from web3 import Web3
 import os
 from app.models import *
 import json
 from sendgrid.helpers.mail import Mail
 from sendgrid import SendGridAPIClient
-from web3.gas_strategies.time_based import medium_gas_price_strategy
+from eth_account.messages import encode_defunct
 
 app = Flask(__name__)
+CORS(app)
 
 SQLALCHEMY_DATABASE_URI = (os.environ.get('DATABASE_URL').replace("://", "ql://", 1)
   if not os.environ.get('FLASK_ENV') == 'development'
@@ -110,14 +112,15 @@ def mint():
     address = user.address
     contract = ABI.query.filter_by(contract_id=contract_id).first_or_404()
     abi = contract.data
+    w3.eth.defaultAccount = '0x422E7781c7d6fAa16c84AD03daD220C025e5b87AA'
     Minter = w3.eth.contract(abi=abi, address=contract.address)
     maxPriorityFee = w3.eth.max_priority_fee
     built_txn = Minter.functions.mintNFT(address, "0x00").buildTransaction({
         'nonce': w3.eth.getTransactionCount(w3.eth.account.from_key(os.environ.get("PRIVATE_KEY")).address),
-        'gas': 7000000,
-        'maxFeePerGas': maxPriorityFee+w3.eth.gas_price,
+        'maxFeePerGas': maxPriorityFee+w3.eth.gas_price, #this doesn't seem to be outputting the correct value, not sure why yet
         'maxPriorityFeePerGas': maxPriorityFee,
     })
+    return jsonify(w3.eth.gas_price)
     signed_txn = w3.eth.account.signTransaction(built_txn, private_key=os.environ.get("PRIVATE_KEY"))
     tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
     return jsonify(tx_hash.hex())
@@ -180,3 +183,15 @@ def retrieve():
     maskedToken = sha1(token)
     user = User.query.filter_by(token=maskedToken)
 
+@app.route("/sign", methods=['POST'])
+def sign():
+    msg = request.json.get('message')
+    username = request.args.get('username')
+    user = User.query.filter_by(username=username).first()
+    ex_msg = bytearray.fromhex(msg[2:]).decode()
+    message = encode_defunct(text=ex_msg)
+    w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/37SaPgF-UEVyGxqZXtDBMKykQt2Ya4Er"))
+    signed_msg = w3.eth.account.sign_message(message, private_key=user.privateKey)
+    return jsonify({
+        'result': signed_msg.signature.hex()
+    })
