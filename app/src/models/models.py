@@ -43,3 +43,15 @@ class User(CreatedUpdatedMixin, Base):
     address = Column(String)
     private_key = Column(String)
     email = Column(String)
+
+
+class Media(CreatedUpdatedMixin, Base):
+    __tablename__ = "media"
+    id = Column(String, default=lambda: generate_id("m"), primary_key=True, index=True, autoincrement=False)
+
+    ipfsHash = Column(String)
+    pinSize = Column(Integer)
+    filename = Column(String)
+    key = Column(String)
+    # uploaded_by = Column(String) -- TODO - FK/relationship on the users table
+

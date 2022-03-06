@@ -22,6 +22,8 @@ Install Postgres on your computer (I Used the Postgres.app)
 - [Run the Alembic migrations](https://alembic.sqlalchemy.org/en/latest/tutorial.html#running-our-first-migration):
 - `alembic upgrade head`
 - You should now be ready to run the application!
+- NOTE - For creating new ALembic migrations, you will need to export DB_PASSWORD
+- Then you should be able to run `alembic revision --autogenerate -m "create media table"`
 
 
 ### Authentication

@@ -43,17 +43,16 @@ class RelationalDB:
 
 # TODO: add to infra-aws repo
 class S3Bucket:
-    _bucket_label = "some_random_bucket"
-    _media_bucket_label = "media_bucket"
+    _media_bucket_label = "profile_pictures_bucket"
 
     def __init__(self):
-        self.some_bucket = self._get_some_bucket()
+        self.media_bucket = self._get_media_bucket()
 
-    def _get_some_bucket(self):
-        return get_param_with_default(f"/{env}/api/{self._bucket_label}", "empty bucket")
+    def _get_media_bucket(self):
+        return get_param_with_default(f"/{env}/api/{self._media_bucket_label}")
 
 
 # NOTE(john) - The purpose of these is to load the SSM params once on APP startup
 # Otherwise each call to the parameter store is wasted time/latency
-S3BucketParams = S3Bucket()
+S3BucketConfig = S3Bucket()
 RelationalDB = RelationalDB()

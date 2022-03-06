@@ -1,17 +1,13 @@
-import logging
-import traceback
-
 import psutil
 import time
 from datetime import timedelta
-from fastapi import FastAPI, Request
-from starlette.responses import FileResponse
-from ddtrace import patch_all
+from fastapi import FastAPI
 
 from app.src.config.logger_config import LoggerConfig
 from app.src.controllers import (
     contract_controller,
-    mint_controller
+    mint_controller,
+    media_controller,
 )
 
 logger = LoggerConfig(__name__).get()
@@ -20,6 +16,7 @@ logger.info("API Booting up....")
 app = FastAPI()
 app.include_router(contract_controller.router)
 app.include_router(mint_controller.router)
+app.include_router(media_controller.router)
 
 
 @app.get("/", include_in_schema=False)

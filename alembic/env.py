@@ -12,7 +12,7 @@ from app.src.models.models import Base
 config = context.config
 
 user = "wally_api_user"
-password = os.getenv("DB_PASSWORD", "password")
+password = os.getenv("DB_PASSWORD")
 host = os.getenv("DB_HOST", "localhost")
 port = "5432"
 name = "wally_api"

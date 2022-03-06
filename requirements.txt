@@ -101,3 +101,9 @@ fastapi~=0.68.2
 starlette~=0.14.2
 ddtrace~=0.57.1
 sendgrid~=6.9.6
+psycopg2-binary==2.9.3
+python-json-logger==2.0.2
+python-multipart==0.0.5
+
+# Mako-1.1.6 alembic-1.7.6
+
