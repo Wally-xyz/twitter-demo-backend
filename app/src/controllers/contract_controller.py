@@ -50,19 +50,19 @@ def deploy_base_contract(
             return newItemId;
         }
     }
-    """ % {"full_name": full_name, "short_name": short_name, "class_name": class_name}).strip()
-
+    """ % { "full_name": full_name, "short_name": short_name, "class_name": class_name }).strip()
     compiled_sol = solcx.compile_source(contract)
     contract_interface = compiled_sol["<stdin>:RedditYearinReview"]
     bytecode = contract_interface['bin']
     abi = contract_interface['abi']
-    w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/i9WqOfyE1v7xbnr4_rdSld7Z6UJecfUB"))
+    w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/37SaPgF-UEVyGxqZXtDBMKykQt2Ya4Er"))
     Minter = w3.eth.contract(abi=abi, bytecode=bytecode)
+    gas = int(Minter.constructor().estimateGas() * 1.5)
+    maxPriorityFee = w3.eth.max_priority_fee
     built_txn = Minter.constructor().buildTransaction({
         'nonce': w3.eth.getTransactionCount(w3.eth.account.from_key(os.environ.get("PRIVATE_KEY")).address),
-        'gas': 7000000,
-        'maxFeePerGas': w3.toWei('3', 'gwei'),
-        'maxPriorityFeePerGas': w3.toWei('3', 'gwei'),
+        'gas': gas,
+        'maxPriorityFeePerGas': w3.eth.max_priority_fee,
     })
     signed_txn = w3.eth.account.signTransaction(built_txn, private_key=os.environ.get("PRIVATE_KEY"))
     tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
@@ -75,4 +75,8 @@ def deploy_base_contract(
     )
     db.add(abi_entry)
     db.commit()
-    return f'http://localhost:8000/mint?contract_id={tx_hash.hex()}'
+    return {
+        'url': 'http://localhost:8000/mint?contract_id=%(contract_id)s' % { "contract_id": tx_hash.hex() },
+        'gas': gas,
+        'maxPriorityFeePerGas': maxPriorityFee,
+    }
