@@ -27,7 +27,7 @@ class CreatedUpdatedMixin(object):
     )
 
 
-class ABI(CreatedUpdatedMixin, Base):
+class ABI(Base, CreatedUpdatedMixin):
     __tablename__ = "abi"
     id = Column(String, default=lambda: generate_id("abi"), primary_key=True, index=True, autoincrement=False)
     data = Column(String)
@@ -36,7 +36,7 @@ class ABI(CreatedUpdatedMixin, Base):
     address = Column(String)
 
 
-class User(CreatedUpdatedMixin, Base):
+class User(Base, CreatedUpdatedMixin):
     __tablename__ = "users"
     id = Column(String, default=lambda: generate_id("u"), primary_key=True, index=True, autoincrement=False)
     username = Column(String)
@@ -45,13 +45,15 @@ class User(CreatedUpdatedMixin, Base):
     email = Column(String)
 
 
-class Media(CreatedUpdatedMixin, Base):
+class Media(Base, CreatedUpdatedMixin):
     __tablename__ = "media"
     id = Column(String, default=lambda: generate_id("m"), primary_key=True, index=True, autoincrement=False)
 
-    ipfsHash = Column(String)
-    pinSize = Column(Integer)
+    ipfs_hash = Column(String)
+    pin_size = Column(Integer)
     filename = Column(String)
     key = Column(String)
+    name = Column(String)
+    description = Column(String)
     # uploaded_by = Column(String) -- TODO - FK/relationship on the users table
 
