@@ -1,5 +1,4 @@
 import io
-import os
 import uuid
 from typing import Optional
 
@@ -11,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.src.clients.pinata_client import PIN_URL
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
-from app.src.config.parameter_store import S3BucketConfig
+from app.src.config.parameter_store import S3BucketConfig, Properties
 from app.src.models.models import Media
 from app.src.views.media_view import MediaView
 
@@ -26,9 +25,7 @@ def upload_to_ipfs(
 ):
     filename = upload_file.filename
     logger.info(f"Uploading media, File object = {filename}")
-    # content_type = upload_file.content_type
-    pinata_auth = os.getenv('PINATA_JWT')
-    headers = {'Authorization': f'Bearer {pinata_auth}'}
+    headers = {'Authorization': f'Bearer {Properties.pinata_jwt}'}
     contents = upload_file.file.read()
 
     result = requests.post(url=PIN_URL,
@@ -43,10 +40,10 @@ def upload_to_ipfs(
 
     logger.info(result.json())
 
-    ipfsHash = result.json()['IpfsHash']
-    pinSize = result.json()["PinSize"]
+    ipfs_hash = result.json()['IpfsHash']
+    pin_size = result.json()["PinSize"]
 
-    media_object = Media(ipfs_hash=ipfsHash, pin_size=pinSize, filename=filename, key=s3_key)
+    media_object = Media(ipfs_hash=ipfs_hash, pin_size=pin_size, filename=filename, key=s3_key)
     db.add(media_object)
     db.commit()
     db.refresh(media_object)

@@ -9,11 +9,9 @@ from app.src.models.models import User
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
 
-from sendgrid.helpers.mail import Mail
-from sendgrid import SendGridAPIClient
-
 router = APIRouter(prefix="/mint")
 logger = LoggerConfig(__name__).get()
+
 
 @router.post("/username")
 def mint_with_username(
@@ -46,7 +44,7 @@ def mint_with_username(
     })
     signed_txn = w3.eth.account.signTransaction(built_txn, private_key=os.environ.get("PRIVATE_KEY"))
     tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    return {"hash" : tx_hash.hex()}
+    return {"hash": tx_hash.hex()}
 
 #
 # @router.post("/email")

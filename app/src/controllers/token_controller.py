@@ -1,16 +1,9 @@
-from app.src.config.database_config import get_db
-from app.src.config.logger_config import LoggerConfig
-from app.src.models.models import User
 
-import json
-import os
-
-import solcx
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from web3 import Web3
-from web3.types import ABI
 
+from app.src.models.models import User
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
 from eth_account.messages import encode_defunct
@@ -25,8 +18,8 @@ logger = LoggerConfig(__name__).get()
 #     maskedToken = sha1(token)
 #     user = User.query.filter_by(token=maskedToken)
 
-@router.post("/sign")
-def sign(
+@router.get("/sign")
+def sign_message(
         message: str = "Reddit Year in Review",
         username: str = "u_123",  # Convert to user_id?
         db: Session = Depends(get_db)

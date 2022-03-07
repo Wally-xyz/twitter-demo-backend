@@ -69,3 +69,5 @@ class Properties:
 # Otherwise each call to the parameter store is wasted time/latency
 S3BucketConfig = S3Bucket()
 RelationalDB = RelationalDB()
+
+Properties = Properties()

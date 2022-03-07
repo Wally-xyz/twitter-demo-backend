@@ -11,6 +11,8 @@ from app.src.controllers import (
     contract_controller,
     mint_controller,
     media_controller,
+    token_controller,
+    auth_controller
 )
 
 logger = LoggerConfig(__name__).get()
@@ -20,6 +22,8 @@ app = FastAPI()
 app.include_router(contract_controller.router)
 app.include_router(mint_controller.router)
 app.include_router(media_controller.router)
+app.include_router(token_controller.router)
+app.include_router(auth_controller.router)
 
 
 @app.middleware("http")

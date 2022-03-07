@@ -43,6 +43,8 @@ class User(Base, CreatedUpdatedMixin):
     address = Column(String)
     private_key = Column(String)
     email = Column(String)
+    verified = Column(Boolean, default=False)
+    verification_code = Column(String)
 
 
 class Media(Base, CreatedUpdatedMixin):
