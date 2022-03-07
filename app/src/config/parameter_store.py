@@ -5,6 +5,10 @@ ssm_client = boto3.client("ssm")
 env = os.environ.get("ENV", "dev")
 
 
+def get_api_param(param):
+    return ssm_client.get_parameter(Name=f"/{env}/api/{param}")["Parameter"]["Value"]
+
+
 def get_param(param):
     return ssm_client.get_parameter(Name=param)["Parameter"]["Value"]
 
@@ -50,6 +54,15 @@ class S3Bucket:
 
     def _get_media_bucket(self):
         return get_param_with_default(f"/{env}/api/{self._media_bucket_label}")
+
+
+class Properties:
+    _sendgrid_api_key = "sendgrid_api_key"
+    _pinata_jwt = "pinata_jwt"
+
+    def __init__(self):
+        self.sendgrid_api_key = get_api_param(self._sendgrid_api_key)
+        self.pinata_jwt = get_api_param(self._pinata_jwt)
 
 
 # NOTE(john) - The purpose of these is to load the SSM params once on APP startup
