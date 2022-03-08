@@ -29,7 +29,7 @@ def get_wallet(
 
 @router.post("/sign")
 def sign_message(
-        message: str = "Reddit Year in Review",
+        message: str = "Reddit Year in Review", #should come in as hex encoded
         db: Session = Depends(get_db),
         user_id: str = Depends(get_current_user_id),
 ):
