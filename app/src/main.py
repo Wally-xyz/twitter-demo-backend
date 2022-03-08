@@ -5,8 +5,12 @@ import psutil
 import time
 from datetime import timedelta
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from fastapi_jwt_auth import AuthJWT
+from fastapi_jwt_auth.exceptions import AuthJWTException
 
 from app.src.config.logger_config import LoggerConfig
+from app.src.config.parameter_store import Properties
 from app.src.controllers import (
     contract_controller,
     mint_controller,
@@ -24,6 +28,19 @@ app.include_router(mint_controller.router)
 app.include_router(media_controller.router)
 app.include_router(token_controller.router)
 app.include_router(auth_controller.router)
+
+
+@AuthJWT.load_config
+def get_config():
+    return [("authjwt_secret_key", Properties.authjwt_secret_key)]
+
+
+@app.exception_handler(AuthJWTException)
+def authjwt_exception_handler(request: Request, exc: AuthJWTException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.message}
+    )
 
 
 @app.middleware("http")

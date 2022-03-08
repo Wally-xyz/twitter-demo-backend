@@ -57,12 +57,14 @@ class S3Bucket:
 
 
 class Properties:
-    _sendgrid_api_key = "sendgrid_api_key"
-    _pinata_jwt = "pinata_jwt"
+    _sendgrid_api_key: str = "sendgrid_api_key"
+    _pinata_jwt: str = "pinata_jwt"
+    _authjwt_secret_key: str = "authjwt_secret_key"
 
     def __init__(self):
         self.sendgrid_api_key = get_api_param(self._sendgrid_api_key)
         self.pinata_jwt = get_api_param(self._pinata_jwt)
+        self.authjwt_secret_key = get_api_param(self._authjwt_secret_key)
 
 
 # NOTE(john) - The purpose of these is to load the SSM params once on APP startup
