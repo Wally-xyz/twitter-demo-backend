@@ -1,6 +1,9 @@
 # wally-api
 Primary API Repo 
 
+### AWS Setup
+Run `aws configure`
+If that doesn't work, try first running: `brew install awscli`
 
 ### How to get this running
 Clone this repository
@@ -15,6 +18,7 @@ Install Postgres on your computer (I Used the Postgres.app)
 - Create the Wally database: `CREATE DATABASE wally_api;`
 - Create the Wally API user, pull the password from SSM:
 - `aws ssm get-parameter --name=/dev/api/db_password`
+- 
 - `create user wally_api_user with password 'password';` 
 - Grant permissions to that user
 - `alter user wally_api_user with superuser;`
@@ -22,7 +26,7 @@ Install Postgres on your computer (I Used the Postgres.app)
 - [Run the Alembic migrations](https://alembic.sqlalchemy.org/en/latest/tutorial.html#running-our-first-migration):
 - `alembic upgrade head`
 - You should now be ready to run the application!
-- NOTE - For creating new ALembic migrations, you will need to export DB_PASSWORD
+- NOTE - For creating new Alembic migrations, you will need to export DB_PASSWORD
 - Then you should be able to run `alembic revision --autogenerate -m "create media table"`
 
 

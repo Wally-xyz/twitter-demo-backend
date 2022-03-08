@@ -39,10 +39,10 @@ class ABI(Base, CreatedUpdatedMixin):
 class User(Base, CreatedUpdatedMixin):
     __tablename__ = "users"
     id = Column(String, default=lambda: generate_id("u"), primary_key=True, index=True, autoincrement=False)
-    username = Column(String)
+    username = Column(String)  # Currently unused
     address = Column(String)
     private_key = Column(String)
-    email = Column(String)
+    email = Column(String, index=True, unique=True)
     verified = Column(Boolean, default=False)
     verification_code = Column(String)
 

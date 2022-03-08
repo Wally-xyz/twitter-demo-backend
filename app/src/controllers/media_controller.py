@@ -5,12 +5,16 @@ from typing import Optional
 import boto3
 import requests
 from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi_jwt_auth import AuthJWT
+from fastapi.security import HTTPBearer
+
 from sqlalchemy.orm import Session
 
 from app.src.clients.pinata_client import PIN_URL
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
 from app.src.config.parameter_store import S3BucketConfig, Properties
+from app.src.controllers.auth_controller import get_current_user_id
 from app.src.models.models import Media
 from app.src.views.media_view import MediaView
 
@@ -21,8 +25,10 @@ logger = LoggerConfig(__name__).get()
 @router.post("/upload")
 def upload_to_ipfs(
         upload_file: UploadFile = File(...),
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_db),
+        user_id: str = Depends(get_current_user_id)
 ):
+    print(user_id)
     filename = upload_file.filename
     logger.info(f"Uploading media, File object = {filename}")
     headers = {'Authorization': f'Bearer {Properties.pinata_jwt}'}
@@ -68,3 +74,22 @@ def update_media(
     db.refresh(media_object)
 
     return MediaView(media_object)
+
+
+# Authenticated
+# @router.put("/{media_id}")
+# def associate(
+#         media_id: str,
+#         name: Optional[str] = None,
+#         description: Optional[str] = None,
+#         db: Session = Depends(get_db)
+# ):
+#     media_object = db.query(Media).filter(Media.id == media_id).first()
+#     if name:
+#         media_object.name = name
+#     if description:
+#         media_object.description = description
+#     db.commit()
+#     db.refresh(media_object)
+# 
+#     return MediaView(media_object)

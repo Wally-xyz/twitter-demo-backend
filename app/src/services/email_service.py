@@ -10,7 +10,7 @@ class EmailService:
     @staticmethod
     def send_verification_code(user: User, code: str):
         message = Mail(
-            from_email='from_email@example.com',
+            from_email='hello@wallylabs.xyz',
             to_emails=user.email,
             subject='Verify your email address',
             html_content=f'Use the following code: <strong>{code}</strong>')
