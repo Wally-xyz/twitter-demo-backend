@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.src.config.logger_config import LoggerConfig
 from app.src.config.parameter_store import Properties
@@ -28,6 +29,20 @@ app.include_router(mint_controller.router)
 app.include_router(media_controller.router)
 app.include_router(token_controller.router)
 app.include_router(auth_controller.router)
+
+origins = [
+    "http://localhost",
+    "http://localhost:8000",
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @AuthJWT.load_config
