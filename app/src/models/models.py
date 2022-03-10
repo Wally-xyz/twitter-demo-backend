@@ -57,5 +57,5 @@ class Media(Base, CreatedUpdatedMixin):
     key = Column(String)
     name = Column(String)
     description = Column(String)
-    # uploaded_by = Column(String) -- TODO - FK/relationship on the users table
-
+    user_id = Column(String, ForeignKey("users.id"), index=True)
+    user = relationship("User")
