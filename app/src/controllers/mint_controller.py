@@ -10,7 +10,7 @@ from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
 
 router = APIRouter(prefix="/mint")
-logger = LoggerConfig(__name__).get()
+#logger = LoggerConfig(__name__).get()
 
 
 @router.post("/username")
