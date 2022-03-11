@@ -12,3 +12,10 @@ class UserService:
         db.commit()
         db.refresh(user)
         return user
+
+    @staticmethod
+    def get(db: Session, user_id: str) -> User:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise Exception(f"User with id {user_id} not found")
+        return user

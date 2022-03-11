@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from web3 import Web3
@@ -27,9 +26,10 @@ def get_wallet(
     user = db.query(User).filter(User.id == user_id).first()
     return {'data': user.address}
 
+
 @router.post("/sign")
 def sign_message(
-        message: str = "Reddit Year in Review", #should come in as hex encoded
+        message: str = "Reddit Year in Review",  # should come in as hex encoded
         db: Session = Depends(get_db),
         user_id: str = Depends(get_current_user_id),
 ):

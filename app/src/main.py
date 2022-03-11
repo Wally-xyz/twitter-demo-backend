@@ -4,6 +4,8 @@ from urllib.request import Request
 import psutil
 import time
 from datetime import timedelta
+
+import uvicorn as uvicorn
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi_jwt_auth import AuthJWT
@@ -19,6 +21,8 @@ from app.src.controllers import (
     token_controller,
     auth_controller
 )
+import logging
+
 
 logger = LoggerConfig(__name__).get()
 logger.info("API Booting up....")
@@ -80,3 +84,7 @@ async def default_middleware_logging(request: Request, call_next):
 def get_uptime():
     uptime = time.time() - psutil.boot_time()
     return {"uptime": "{:0>8}".format(str(timedelta(seconds=uptime)))}
+
+
+# if __name__ == "__main__":
+#     uvicorn.run("app.src.main:app", host='0.0.0.0', port=80, reload=True, debug=True, workers=3)
