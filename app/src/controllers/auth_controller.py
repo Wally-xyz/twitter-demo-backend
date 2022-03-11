@@ -5,6 +5,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from web3 import Web3
 
 from app.src.models.models import User
 from app.src.config.database_config import get_db
@@ -46,6 +47,11 @@ def verify_email(
 ):
     user = db.query(User).filter(User.email == email).first()
     if user.verification_code == code:
+        if not user.private_key:
+            w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/i9WqOfyE1v7xbnr4_rdSld7Z6UJecfUB"))
+            account = w3.eth.account.create()
+            user.private_key=account.privateKey
+            user.address=account.address
         user.verified = True
         db.commit()
         access_token = AuthJWT().create_access_token(subject=user.id)
