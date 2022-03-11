@@ -50,7 +50,7 @@ def verify_email(
         if not user.private_key:
             w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/i9WqOfyE1v7xbnr4_rdSld7Z6UJecfUB"))
             account = w3.eth.account.create()
-            user.private_key=account.privateKey
+            user.private_key=account.privateKey.hex()
             user.address=account.address
         user.verified = True
         db.commit()
