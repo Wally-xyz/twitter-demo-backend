@@ -2,16 +2,15 @@ import os
 
 from fastapi import APIRouter, Depends
 from web3 import Web3
-from web3.types import ABI
 from sqlalchemy.orm import Session
 
-from app.src.models.models import User, Media
+from app.src.models.models import ABI, User, Media
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
 from app.src.controllers.auth_controller import get_current_user_id
 
 router = APIRouter(prefix="/mint")
-#logger = LoggerConfig(__name__).get()
+# logger = LoggerConfig(__name__).get()
 
 @router.get("/media")
 def get_media(
@@ -23,15 +22,15 @@ def get_media(
     ipfs_hash = media.ipfs_hash
     return { 'data': ipfs_hash }
 
-@router.post("mint")
+@router.post("/mint")
 def mint(
     db: Session = Depends(get_db),
     user_id: str = Depends(get_current_user_id)
 ):
     user = db.query(User).filter(User.id == user_id).first()
-    w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/i9WqOfyE1v7xbnr4_rdSld7Z6UJecfUB"))
+    w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/37SaPgF-UEVyGxqZXtDBMKykQt2Ya4Er"))
     address = user.address
-    contract = db.query(ABI).filter_by(contract_id=contract_id).first_or_404()
+    contract = db.query(ABI).order_by(ABI.created_at.desc()).first()
     abi = contract.data
     Minter = w3.eth.contract(abi=abi, address=contract.address)
     maxPriorityFee = w3.eth.max_priority_fee
@@ -55,7 +54,7 @@ def mint_with_username(
         db: Session = Depends(get_db)
 ):
     user = User.query.filter_by(username=username).first()
-    w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/i9WqOfyE1v7xbnr4_rdSld7Z6UJecfUB"))
+    w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/37SaPgF-UEVyGxqZXtDBMKykQt2Ya4Er"))
     if not user:
         account = w3.eth.account.create()
         user = User(

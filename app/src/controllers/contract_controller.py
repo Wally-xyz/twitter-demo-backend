@@ -78,7 +78,7 @@ def deploy_base_contract(
     raw = rlp.encode([sender_bytes, nonce])
     h = w3.keccak(raw)
     address_bytes = h[12:]
-    contract_address = '0x'+address_bytes.hex()
+    contract_address = Web3.toChecksumAddress(address_bytes)
 
     abi_entry = ABI(
         contract_id=tx_hash.hex(),
