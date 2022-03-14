@@ -7,10 +7,13 @@ from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
 from app.src.controllers.auth_controller import get_current_user_id
 from eth_account.messages import encode_defunct
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/tokens")
 logger = LoggerConfig(__name__).get()
 
+class Message(BaseModel):
+    message: str #should come in as hex encoded
 
 # @router.get("/")
 # def retrieve():
@@ -29,13 +32,13 @@ def get_wallet(
 
 @router.post("/sign")
 def sign_message(
-        message: str = "Reddit Year in Review",  # should come in as hex encoded
+        messageData: Message,
         db: Session = Depends(get_db),
         user_id: str = Depends(get_current_user_id),
 ):
     user = db.query(User).filter(User.id == user_id).first()
-    ex_msg = bytearray.fromhex(message[2:]).decode()
+    ex_msg = bytearray.fromhex(messageData.message[2:]).decode()
     message = encode_defunct(text=ex_msg)
     w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/37SaPgF-UEVyGxqZXtDBMKykQt2Ya4Er"))
-    signed_msg = w3.eth.account.sign_message(message, private_key=user.privateKey)
+    signed_msg = w3.eth.account.sign_message(message, private_key=user.private_key)
     return {'result': signed_msg.signature.hex()}
