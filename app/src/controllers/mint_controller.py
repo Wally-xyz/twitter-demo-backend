@@ -5,13 +5,48 @@ from web3 import Web3
 from web3.types import ABI
 from sqlalchemy.orm import Session
 
-from app.src.models.models import User
+from app.src.models.models import User, Media
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
+from app.src.controllers.auth_controller import get_current_user_id
 
 router = APIRouter(prefix="/mint")
 #logger = LoggerConfig(__name__).get()
 
+@router.get("/media")
+def get_media(
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id)
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    media = db.query(Media).filter(Media.user==user).first()
+    ipfs_hash = media.ipfs_hash
+    return { 'data': ipfs_hash }
+
+@router.post("mint")
+def mint(
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id)
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/i9WqOfyE1v7xbnr4_rdSld7Z6UJecfUB"))
+    address = user.address
+    contract = db.query(ABI).filter_by(contract_id=contract_id).first_or_404()
+    abi = contract.data
+    Minter = w3.eth.contract(abi=abi, address=contract.address)
+    maxPriorityFee = w3.eth.max_priority_fee
+    media = db.query(Media).filter(Media.user==user).first()
+    ipfs_hash = media.ipfs_hash
+    nonce = w3.eth.getTransactionCount(w3.eth.account.from_key(os.environ.get("PRIVATE_KEY")).address)
+    built_txn = Minter.functions.mintNFT(address, ipfs_hash).buildTransaction({
+        'nonce': nonce,
+        'maxFeePerGas': maxPriorityFee + w3.eth.gas_price,
+        # this doesn't seem to be outputting the correct value, not sure why yet
+        'maxPriorityFeePerGas': maxPriorityFee,
+    })
+    signed_txn = w3.eth.account.signTransaction(built_txn, private_key=os.environ.get("PRIVATE_KEY"))
+    tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+    return {"hash": tx_hash.hex()}
 
 @router.post("/username")
 def mint_with_username(
@@ -36,7 +71,9 @@ def mint_with_username(
     w3.eth.defaultAccount = '0x422E7781c7d6fAa16c84AD03daD220C025e5b87AA'
     Minter = w3.eth.contract(abi=abi, address=contract.address)
     maxPriorityFee = w3.eth.max_priority_fee
-    built_txn = Minter.functions.mintNFT(address, "0x00").buildTransaction({
+    media = Media.query.filter_by(User=user)
+    ipfs_hash = media.ipfs_hash
+    built_txn = Minter.functions.mintNFT(address, ipfs_hash).buildTransaction({
         'nonce': w3.eth.getTransactionCount(w3.eth.account.from_key(os.environ.get("PRIVATE_KEY")).address),
         'maxFeePerGas': maxPriorityFee + w3.eth.gas_price,
         # this doesn't seem to be outputting the correct value, not sure why yet
