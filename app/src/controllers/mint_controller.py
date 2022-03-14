@@ -10,9 +10,12 @@ from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
 
 router = APIRouter(prefix="/mint")
-#logger = LoggerConfig(__name__).get()
+logger = LoggerConfig(__name__).get()
 
 
+# TODO - Remove username and contract_id from this endpoint
+# Make it behind the authentication so it pulls the user from the logged-in session JWT token
+# Get the contract_id from the database (we'll only ahave one right?
 @router.post("/username")
 def mint_with_username(
         contract_id: str,

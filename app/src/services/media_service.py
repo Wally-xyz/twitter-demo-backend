@@ -10,12 +10,12 @@ from sqlalchemy.orm import Session
 
 from app.src.clients.pinata_client import PIN_URL, PinFileResponse
 from app.src.config.logger_config import LoggerConfig
-from app.src.config.parameter_store import S3BucketConfig, Properties
+from app.src.config.parameter_store import Properties
 from app.src.models.models import User, Media
 from app.src.requests.create_media_request import CreateMediaData
 
-# logger = LoggerConfig(__name__).get()
-logger = logging.getLogger(__name__)
+logger = LoggerConfig(__name__).get()
+
 
 class MediaService:
 
@@ -53,20 +53,17 @@ class MediaService:
 
         # Also put the file to S3
         s3_key = str(uuid.uuid4())
-        boto3.client("s3").upload_fileobj(io.BytesIO(contents), S3BucketConfig.media_bucket, s3_key)
+        boto3.client("s3").upload_fileobj(io.BytesIO(contents), Properties.media_bucket, s3_key)
 
         ipfs_hash = result.json()["IpfsHash"]
         pin_size = result.json()["PinSize"]
 
         # TODO - Better unwinding of the response object
-        #response = PinFileResponse(**result.json())
-        
+        # response = PinFileResponse(**result.json())
+
         media_object = Media(ipfs_hash=ipfs_hash, pin_size=pin_size, filename=filename, key=s3_key,
                              user_id=user.id, name=data.name, description=data.description)
         db.add(media_object)
         db.commit()
         db.refresh(media_object)
         return media_object
-
-
-
