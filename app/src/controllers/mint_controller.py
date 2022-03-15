@@ -31,6 +31,7 @@ def mint(
 ):
     user = db.query(User).filter(User.id == user_id).first()
     w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/37SaPgF-UEVyGxqZXtDBMKykQt2Ya4Er"))
+    w3.eth.defaultAccount = os.environ.get("PUBLIC_KEY") # Annoyingly needs to be set to estimate gas for transaction
     address = user.address
     contract = db.query(ABI).order_by(ABI.created_at.desc()).first()
     abi = contract.data
@@ -41,9 +42,9 @@ def mint(
     nonce = w3.eth.getTransactionCount(w3.eth.account.from_key(os.environ.get("PRIVATE_KEY")).address)
     built_txn = minter.functions.mintNFT(address, ipfs_hash).buildTransaction({
         'nonce': nonce,
-        'maxFeePerGas': max_priority_fee + w3.eth.gas_price,
+        # 'maxFeePerGas': max_priority_fee + w3.eth.gas_price,
         # this doesn't seem to be outputting the correct value, not sure why yet
-        'maxPriorityFeePerGas': max_priority_fee,
+        # 'maxPriorityFeePerGas': max_priority_fee,
     })
     signed_txn = w3.eth.account.signTransaction(built_txn, private_key=os.environ.get("PRIVATE_KEY"))
     tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
@@ -73,7 +74,7 @@ def mint_with_username(
     address = user.address
     contract = ABI.query.filter_by(contract_id=contract_id).first_or_404()
     abi = contract.data
-    w3.eth.defaultAccount = '0x422E7781c7d6fAa16c84AD03daD220C025e5b87AA'
+    w3.eth.defaultAccount = os.environ.get("PUBLIC_KEY")
     minter = w3.eth.contract(abi=abi, address=contract.address)
     max_priority_fee = w3.eth.max_priority_fee
     media = Media.query.filter_by(User=user)
