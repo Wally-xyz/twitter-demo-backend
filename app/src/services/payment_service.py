@@ -8,6 +8,7 @@ from app.src.models.typedefs.PaymentStatus import PaymentStatus
 
 logger = LoggerConfig(__name__).get()
 
+
 class PaymentService:
     stripe.api_key = Properties.stripe_api_key
 
