@@ -1,9 +1,8 @@
 import string
 import random
-from typing import Optional
 
 from fastapi import APIRouter, Depends
-from fastapi import HTTPException
+
 from sqlalchemy.orm import Session
 from web3 import Web3
 
@@ -14,10 +13,9 @@ from app.src.services.email_service import EmailService
 from app.src.services.user_service import UserService
 from app.src.views.user_view import UserView
 from fastapi_jwt_auth import AuthJWT
-from starlette.status import HTTP_403_FORBIDDEN
 
 router = APIRouter(prefix="/auth")
-# logger = LoggerConfig(__name__).get()
+logger = LoggerConfig(__name__).get()
 
 
 def render(user: User, access_token: str):
@@ -50,25 +48,11 @@ def verify_email(
         if not user.private_key:
             w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/i9WqOfyE1v7xbnr4_rdSld7Z6UJecfUB"))
             account = w3.eth.account.create()
-            user.private_key=account.privateKey.hex()
-            user.address=account.address
+            user.private_key = account.privateKey.hex()
+            user.address = account.address
         user.verified = True
         db.commit()
         access_token = AuthJWT().create_access_token(subject=user.id)
         return render(user, access_token)
     else:
         return {"message": "Invalid Code"}
-
-
-async def get_current_user_id(
-        access_token: Optional[str] = None,
-        authorize: AuthJWT = Depends(),
-):
-    try:
-        # This is a bit of a hack to allow the access_token to come into the request
-        if access_token:
-            authorize._token = access_token
-        authorize.jwt_required(token=access_token)
-        return authorize.get_jwt_subject()
-    except KeyError:
-        HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Username missing")

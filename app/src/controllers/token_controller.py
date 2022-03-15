@@ -5,15 +5,17 @@ from web3 import Web3
 from app.src.models.models import User
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
-from app.src.controllers.auth_controller import get_current_user_id
+from app.src.services.auth_service import get_current_user_id
 from eth_account.messages import encode_defunct
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/tokens")
 logger = LoggerConfig(__name__).get()
 
+
 class Message(BaseModel):
-    message: str #should come in as hex encoded
+    message: str  # should come in as hex encoded
+
 
 # @router.get("/")
 # def retrieve():

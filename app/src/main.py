@@ -19,10 +19,9 @@ from app.src.controllers import (
     mint_controller,
     media_controller,
     token_controller,
-    auth_controller
+    auth_controller,
+    payments_controller
 )
-import logging
-
 
 logger = LoggerConfig(__name__).get()
 logger.info("API Booting up....")
@@ -33,6 +32,8 @@ app.include_router(mint_controller.router)
 app.include_router(media_controller.router)
 app.include_router(token_controller.router)
 app.include_router(auth_controller.router)
+app.include_router(payments_controller.router)
+
 
 origins = [
     "http://localhost",

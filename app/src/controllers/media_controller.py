@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
-from app.src.controllers.auth_controller import get_current_user_id
+from app.src.services.auth_service import get_current_user_id
 from app.src.requests.create_media_request import CreateMediaRequest, CreateMediaData
 from app.src.services.media_service import MediaService
 from app.src.services.user_service import UserService
