@@ -66,10 +66,11 @@ class Media(Base, CreatedUpdatedMixin):
     __tablename__ = "media"
     id = Column(String, default=lambda: generate_id("m"), primary_key=True, index=True, autoincrement=False)
 
-    ipfs_hash = Column(String)
-    pin_size = Column(Integer)
+    json_ipfs_hash = Column(String)
+    media_ipfs_hash = Column(String)
+    ipfs_image_url = Column(String)
     filename = Column(String)
-    key = Column(String)
+    s3_key = Column(String)
     name = Column(String)
     description = Column(String)
     user_id = Column(String, ForeignKey("users.id"), index=True)
