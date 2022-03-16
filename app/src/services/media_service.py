@@ -52,7 +52,6 @@ class MediaService:
                              "description": data.description
                          }}
 
-        # TODO - IPFS Metadata using name/description fields
         media_result = requests.post(url=PIN_URL,
                                      files={"file": contents},
                                      data={
@@ -88,6 +87,7 @@ class MediaService:
         media_object = Media(json_ipfs_hash=json_ipfs_hash, media_ipfs_hash=media_ipfs_hash,
                              filename=filename, s3_key=s3_key, user_id=user.id, name=data.name,
                              description=data.description, ipfs_image_url=ipfs_image_url)
+
         db.add(media_object)
         db.commit()
         db.refresh(media_object)
