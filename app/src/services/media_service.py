@@ -1,4 +1,5 @@
 import io
+import json
 import logging
 import uuid
 from typing import Optional
@@ -44,12 +45,21 @@ class MediaService:
         headers = {'Authorization': f'Bearer {Properties.pinata_jwt}'}
         filename = upload_file.filename
         contents = upload_file.file.read()
+        ipfs_metadata = {"name": data.name,
+                         "keyvalues": {
+                             "description": data.description
+                         }}
 
         # TODO - IPFS Metadata using name/description fields
         result = requests.post(url=PIN_URL,
                                files={"file": contents},
-                               data={"pinataOptions": '{"cidVersion":0}'},
+                               data={
+                                   "pinataOptions": '{"cidVersion":0}',
+                                   "pinataMetadata": json.dumps(ipfs_metadata)
+                               },
                                headers=headers)
+
+        logger.info(result.json())
 
         # Also put the file to S3
         s3_key = str(uuid.uuid4())

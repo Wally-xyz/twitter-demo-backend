@@ -19,7 +19,7 @@ def get_media(
         user_id: str = Depends(get_current_user_id)
 ):
     user = db.query(User).filter(User.id == user_id).first()
-    media = db.query(Media).filter(Media.user == user).first()
+    media = db.query(Media).filter(Media.user == user).order_by(Media.created_at.desc()).first()
     ipfs_hash = media.ipfs_hash
     return {'data': ipfs_hash}
 

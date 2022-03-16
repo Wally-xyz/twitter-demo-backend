@@ -2,6 +2,8 @@
 environment.env
 example.sql
 
+bin/
+pyvenv.cfg
 
 .idea/*
 
