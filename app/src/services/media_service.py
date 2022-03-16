@@ -28,7 +28,7 @@ class MediaService:
         return media
 
     @staticmethod
-    def update(db: Session, media_id: str, user_id: str, data: CreateMediaData):
+    def update(db: Session, media_id: str, user_id: str, data: CreateMediaData) -> Media:
         media_object = MediaService.get(db, media_id)
         if media_object.user_id != user_id:
             raise Exception(f"Insufficient Permissions. UserId {user_id} can not update Media {media_id}")
@@ -39,7 +39,9 @@ class MediaService:
             media_object.description = data.description
         db.commit()
         db.refresh(media_object)
+        return media_object
 
+    # TODO - Refactor some of this to pinata client
     @staticmethod
     def upload_to_ipfs(db: Session, user: User, upload_file: UploadFile, data: CreateMediaData) -> Media:
         headers = {'Authorization': f'Bearer {Properties.pinata_jwt}'}
@@ -59,11 +61,12 @@ class MediaService:
                                      },
                                      headers=headers)
 
-        ipfs_hash = media_result.json()["IpfsHash"]
+        media_ipfs_hash = media_result.json()["IpfsHash"]
+        ipfs_image_url = f'https://gateway.pinata.cloud/ipfs/{media_ipfs_hash}'
 
         json_file = {'name': data.name,
                      'description': data.description,
-                     'image': f'https://gateway.pinata.cloud/ipfs/{ipfs_hash}'
+                     'image': ipfs_image_url,
                      }
         ipfs_metadata["name"] = "json-" + ipfs_metadata["name"]
 
@@ -74,6 +77,7 @@ class MediaService:
                                         "pinataContent": json_file,
                                     },
                                     headers=headers)
+        json_ipfs_hash = json_result.json()["IpfsHash"]
 
         logger.info(media_result.json())
 
@@ -81,13 +85,9 @@ class MediaService:
         s3_key = str(uuid.uuid4())
         boto3.client("s3").upload_fileobj(io.BytesIO(contents), Properties.media_bucket, s3_key)
 
-        json_ipfs_hash = json_result.json()["IpfsHash"]
-
-        # TODO - Better unwinding of the response object
-        # response = PinFileResponse(**result.json())
-
-        media_object = Media(ipfs_hash=json_ipfs_hash, filename=filename, key=s3_key,
-                             user_id=user.id, name=data.name, description=data.description)
+        media_object = Media(json_ipfs_hash=json_ipfs_hash, media_ipfs_hash=media_ipfs_hash,
+                             filename=filename, s3_key=s3_key, user_id=user.id, name=data.name,
+                             description=data.description, ipfs_image_url=ipfs_image_url)
         db.add(media_object)
         db.commit()
         db.refresh(media_object)
