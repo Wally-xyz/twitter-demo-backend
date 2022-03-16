@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 from fastapi import APIRouter, Depends
 from web3 import Web3
@@ -8,6 +9,9 @@ from app.src.models.models import ABI, User, Media
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
 from app.src.services.auth_service import get_current_user_id
+from app.src.services.email_service import EmailService
+from app.src.services.media_service import MediaService
+from app.src.services.payment_service import PaymentService
 
 router = APIRouter(prefix="/mint")
 logger = LoggerConfig(__name__).get()
@@ -26,10 +30,20 @@ def get_media(
 
 @router.post("/mint")
 def mint(
+        media_id: Optional[str] = None,
         db: Session = Depends(get_db),
         user_id: str = Depends(get_current_user_id)
 ):
     user = db.query(User).filter(User.id == user_id).first()
+    if not media_id:
+        media = db.query(Media).filter(Media.user == user).first()
+    else:
+        media = MediaService.get(db, media_id)
+    logger.info(f"Minting media: {media.id}")
+    payment = PaymentService.open_payment(db, user)
+    if not payment:
+        raise Exception("No record of payment. If you believe this is in error, contact us at: ...")
+
     w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/37SaPgF-UEVyGxqZXtDBMKykQt2Ya4Er"))
     w3.eth.defaultAccount = os.environ.get("PUBLIC_KEY") # Annoyingly needs to be set to estimate gas for transaction
     address = user.address
@@ -37,7 +51,6 @@ def mint(
     abi = contract.data
     minter = w3.eth.contract(abi=abi, address=contract.address)
     max_priority_fee = w3.eth.max_priority_fee
-    media = db.query(Media).filter(Media.user == user).first()
     ipfs_hash = media.ipfs_hash
     nonce = w3.eth.getTransactionCount(w3.eth.account.from_key(os.environ.get("PRIVATE_KEY")).address)
     built_txn = minter.functions.mintNFT(address, ipfs_hash).buildTransaction({
@@ -46,48 +59,53 @@ def mint(
         # this doesn't seem to be outputting the correct value, not sure why yet
         # 'maxPriorityFeePerGas': max_priority_fee,
     })
+
     signed_txn = w3.eth.account.signTransaction(built_txn, private_key=os.environ.get("PRIVATE_KEY"))
-    tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    return {"hash": tx_hash.hex()}
+    txn_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+    EmailService.send_minted_email(user, txn_hash.hex())
+    media.txn_hash = txn_hash
+    db.commit()
+    PaymentService.associate_media_with_payment(db, payment, media.id)
+    return {"hash": txn_hash.hex()}
 
 
 # TODO - Remove username and contract_id from this endpoint
 # Make it behind the authentication so it pulls the user from the logged-in session JWT token
 # Get the contract_id from the database (we'll only ahave one right?
-@router.post("/username")
-def mint_with_username(
-        contract_id: str,
-        username: str,
-        db: Session = Depends(get_db)
-):
-    user = User.query.filter_by(username=username).first()
-    w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/37SaPgF-UEVyGxqZXtDBMKykQt2Ya4Er"))
-    if not user:
-        account = w3.eth.account.create()
-        user = User(
-            private_key=account.privateKey,
-            username=username,
-            address=account.address
-        )
-        db.session.add(user)
-        db.session.commit()
-    address = user.address
-    contract = ABI.query.filter_by(contract_id=contract_id).first_or_404()
-    abi = contract.data
-    w3.eth.defaultAccount = os.environ.get("PUBLIC_KEY")
-    minter = w3.eth.contract(abi=abi, address=contract.address)
-    max_priority_fee = w3.eth.max_priority_fee
-    media = Media.query.filter_by(User=user)
-    ipfs_hash = media.ipfs_hash
-    built_txn = minter.functions.mintNFT(address, ipfs_hash).buildTransaction({
-        'nonce': w3.eth.getTransactionCount(w3.eth.account.from_key(os.environ.get("PRIVATE_KEY")).address),
-        'maxFeePerGas': max_priority_fee + w3.eth.gas_price,
-        # this doesn't seem to be outputting the correct value, not sure why yet
-        'maxPriorityFeePerGas': max_priority_fee,
-    })
-    signed_txn = w3.eth.account.signTransaction(built_txn, private_key=os.environ.get("PRIVATE_KEY"))
-    tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    return {"hash": tx_hash.hex()}
+# @router.post("/username")
+# def mint_with_username(
+#         contract_id: str,
+#         username: str,
+#         db: Session = Depends(get_db)
+# ):
+#     user = User.query.filter_by(username=username).first()
+#     w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/37SaPgF-UEVyGxqZXtDBMKykQt2Ya4Er"))
+#     if not user:
+#         account = w3.eth.account.create()
+#         user = User(
+#             private_key=account.privateKey,
+#             username=username,
+#             address=account.address
+#         )
+#         db.session.add(user)
+#         db.session.commit()
+#     address = user.address
+#     contract = ABI.query.filter_by(contract_id=contract_id).first_or_404()
+#     abi = contract.data
+#     w3.eth.defaultAccount = os.environ.get("PUBLIC_KEY")
+#     minter = w3.eth.contract(abi=abi, address=contract.address)
+#     max_priority_fee = w3.eth.max_priority_fee
+#     media = Media.query.filter_by(User=user)
+#     ipfs_hash = media.ipfs_hash
+#     built_txn = minter.functions.mintNFT(address, ipfs_hash).buildTransaction({
+#         'nonce': w3.eth.getTransactionCount(w3.eth.account.from_key(os.environ.get("PRIVATE_KEY")).address),
+#         'maxFeePerGas': max_priority_fee + w3.eth.gas_price,
+#         # this doesn't seem to be outputting the correct value, not sure why yet
+#         'maxPriorityFeePerGas': max_priority_fee,
+#     })
+#     signed_txn = w3.eth.account.signTransaction(built_txn, private_key=os.environ.get("PRIVATE_KEY"))
+#     tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+#     return {"hash": tx_hash.hex()}
 
 #
 # @router.post("/email")

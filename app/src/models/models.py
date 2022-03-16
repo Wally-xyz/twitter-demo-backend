@@ -74,3 +74,4 @@ class Media(Base, CreatedUpdatedMixin):
     description = Column(String)
     user_id = Column(String, ForeignKey("users.id"), index=True)
     user = relationship("User")
+    txn_hash = Column(String)
