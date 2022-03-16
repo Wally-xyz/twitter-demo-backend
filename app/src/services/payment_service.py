@@ -3,7 +3,7 @@ import stripe
 
 from app.src.config.logger_config import LoggerConfig
 from app.src.config.parameter_store import Properties
-from app.src.models.models import Payment
+from app.src.models.models import Payment, User
 from app.src.models.typedefs.PaymentStatus import PaymentStatus
 
 logger = LoggerConfig(__name__).get()
@@ -55,3 +55,16 @@ class PaymentService:
             payment.status = PaymentStatus.FAILURE
         db.commit()
         return payment
+
+    @staticmethod
+    def open_payment(db: Session, user: User) -> Payment:
+        return db.query(Payment).filter(Payment.user == user and Payment.media is None).first()
+
+    @staticmethod
+    def associate_media_with_payment(db: Session, payment: Payment, media_id: str) -> Payment:
+        payment.media_id = media_id
+        db.commit()
+        db.refresh(payment)
+        return payment
+
+
