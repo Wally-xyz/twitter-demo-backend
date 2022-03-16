@@ -31,8 +31,8 @@ class PaymentService:
             mode='payment',
             # It seems like this should redirect to a FE url?
             # Which then pings our backend with additional information...?
-            success_url=Properties.base_domain + f'/payments/{payment.id}/record?success=True',
-            cancel_url=Properties.base_domain + f'/payments/{payment.id}/record?success=False',
+            success_url=Properties.base_domain + f'?success=True',
+            cancel_url=Properties.base_domain + f'?success=False',
         )
         # Figure it's good to save this just in case, not sure what other data we get?
         logger.info(checkout_session)
