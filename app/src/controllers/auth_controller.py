@@ -1,5 +1,6 @@
 import string
 import random
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends
 
@@ -52,7 +53,7 @@ def verify_email(
             user.address = account.address
         user.verified = True
         db.commit()
-        access_token = AuthJWT().create_access_token(subject=user.id)
+        access_token = AuthJWT().create_access_token(subject=user.id, expires_time=timedelta(minutes=60))
         return render(user, access_token)
     else:
         return {"message": "Invalid Code"}
