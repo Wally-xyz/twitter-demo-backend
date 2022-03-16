@@ -58,7 +58,9 @@ class PaymentService:
 
     @staticmethod
     def open_payment(db: Session, user: User) -> Payment:
-        return db.query(Payment).filter(Payment.user == user and Payment.media is None).first()
+        return db.query(Payment).filter(Payment.user == user
+                                        and Payment.media is None
+                                        and Payment.status == PaymentStatus.SUCCESS).first()
 
     @staticmethod
     def associate_media_with_payment(db: Session, payment: Payment, media_id: str) -> Payment:
