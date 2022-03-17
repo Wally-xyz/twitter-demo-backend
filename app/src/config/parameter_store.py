@@ -49,6 +49,8 @@ class Properties:
         self.media_bucket = get_api_param("profile_pictures_bucket")
         self.stripe_api_key = get_api_param("stripe_api_key")
         self.frontend_domain = get_api_param("frontend_url", "http://localhost:3000")
+        self.vault_public_key = get_api_param("vault_public_key")
+        self.vault_private_key = get_api_param("vault_private_key")
 
 
 # NOTE(john) - The purpose of these is to load the SSM params once on APP startup
