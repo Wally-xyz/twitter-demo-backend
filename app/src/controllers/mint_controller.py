@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from web3 import Web3
 from sqlalchemy.orm import Session
 
+from app.src.config.parameter_store import Properties
 from app.src.models.models import ABI, User, Media
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
@@ -24,8 +25,8 @@ def get_media(
 ):
     user = db.query(User).filter(User.id == user_id).first()
     media = db.query(Media).filter(Media.user == user).order_by(Media.created_at.desc()).first()
-    ipfs_hash = media.ipfs_hash
-    return {'data': ipfs_hash}
+    # TODO - Return media view
+    return {'data': media.media_ipfs_hash}
 
 
 @router.post("/mint")
@@ -45,14 +46,15 @@ def mint(
         raise Exception("No record of payment. If you believe this is in error, contact us at: ...")
 
     w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/37SaPgF-UEVyGxqZXtDBMKykQt2Ya4Er"))
-    w3.eth.defaultAccount = os.environ.get("PUBLIC_KEY") # Annoyingly needs to be set to estimate gas for transaction
+    # Needs to be set to estimate gas for transaction
+    w3.eth.defaultAccount = Properties.vault_public_key
     address = user.address
     contract = db.query(ABI).order_by(ABI.created_at.desc()).first()
     abi = contract.data
     minter = w3.eth.contract(abi=abi, address=contract.address)
     max_priority_fee = w3.eth.max_priority_fee
-    ipfs_hash = media.ipfs_hash
-    nonce = w3.eth.getTransactionCount(w3.eth.account.from_key(os.environ.get("PRIVATE_KEY")).address)
+    ipfs_hash = media.json_ipfs_hash
+    nonce = w3.eth.getTransactionCount(w3.eth.account.from_key(Properties.vault_private_key).address)
     built_txn = minter.functions.mintNFT(address, ipfs_hash).buildTransaction({
         'nonce': nonce,
         # 'maxFeePerGas': max_priority_fee + w3.eth.gas_price,
@@ -60,7 +62,7 @@ def mint(
         # 'maxPriorityFeePerGas': max_priority_fee,
     })
 
-    signed_txn = w3.eth.account.signTransaction(built_txn, private_key=os.environ.get("PRIVATE_KEY"))
+    signed_txn = w3.eth.account.signTransaction(built_txn, private_key=Properties.vault_private_key)
     txn_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
     EmailService.send_minted_email(user, txn_hash.hex())
     media.txn_hash = txn_hash

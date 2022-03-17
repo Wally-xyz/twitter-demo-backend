@@ -6,6 +6,8 @@ import solcx
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from web3 import Web3
+
+from app.src.config.parameter_store import Properties
 from app.src.models.models import ABI
 from eth_utils import to_bytes
 
@@ -66,7 +68,7 @@ def deploy_base_contract(
         'nonce': nonce,
         'gas': gas,
     })
-    signed_txn = w3.eth.account.signTransaction(built_txn, private_key=os.environ.get("PRIVATE_KEY"))
+    signed_txn = w3.eth.account.signTransaction(built_txn, private_key=Properties.vault_private_key)
     tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
 
     # https://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
