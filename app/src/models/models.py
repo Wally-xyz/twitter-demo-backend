@@ -60,6 +60,8 @@ class Payment(Base, CreatedUpdatedMixin):
     media = relationship("Media")
     stripe_url = Column(String)
     stripe_id = Column(String)
+    intent_id = Column(String)
+    intent_confirmed = Column(Boolean, default=False)
     amount_cents = Column(Integer)
 
 
