@@ -17,7 +17,7 @@ SQLALCHEMY_DATABASE_URL = f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}"
 
 # Set this as an override for Heroku, since they may change the username/passwords without us knowing
 if os.environ.get("DATABASE_URL"):
-    SQLALCHEMY_DATABASE_URL = os.environ.get("DATABASE_URL")
+    SQLALCHEMY_DATABASE_URL = os.environ.get("DATABASE_URL").replace('postgres://', 'postgresql://')
 
 engine = create_engine(url=SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
