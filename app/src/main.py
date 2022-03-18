@@ -20,7 +20,8 @@ from app.src.controllers import (
     media_controller,
     token_controller,
     auth_controller,
-    payments_controller
+    payments_controller,
+    webhooks_controller,
 )
 
 logger = LoggerConfig(__name__).get()
@@ -33,6 +34,7 @@ app.include_router(media_controller.router)
 app.include_router(token_controller.router)
 app.include_router(auth_controller.router)
 app.include_router(payments_controller.router)
+app.include_router(webhooks_controller.router)
 
 
 origins = [

@@ -66,7 +66,7 @@ def deploy_base_contract(
     contract_interface = compiled_sol["<stdin>:RedditYearinReview"]
     bytecode = contract_interface['bin']
     abi = contract_interface['abi']
-    w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/37SaPgF-UEVyGxqZXtDBMKykQt2Ya4Er"))
+    w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
     Minter = w3.eth.contract(abi=abi, bytecode=bytecode)
     gas = int(Minter.constructor().estimateGas() * 1.5)
     public_address='0x174270d8738c508fe13D460b855C4b04D7a052f3'
