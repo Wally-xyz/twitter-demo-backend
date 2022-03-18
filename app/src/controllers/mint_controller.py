@@ -46,7 +46,7 @@ def mint(
     if not payment:
         raise Exception("No record of payment. If you believe this is in error, contact us at: ...")
 
-    w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/37SaPgF-UEVyGxqZXtDBMKykQt2Ya4Er"))
+    w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
     # Needs to be set to estimate gas for transaction
     w3.eth.defaultAccount = Properties.vault_public_key
     address = user.address
@@ -64,12 +64,13 @@ def mint(
     })
 
     signed_txn = w3.eth.account.signTransaction(built_txn, private_key=Properties.vault_private_key)
-    txn_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    EmailService.send_minted_email(user, txn_hash.hex())
+    txn_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction).hex()
+    # EmailService.send_minted_email(user, txn_hash.hex())
+    # NOTE - Is this the right value to be storing as the txn_hash?
     media.txn_hash = txn_hash
     db.commit()
     PaymentService.associate_media_with_payment(db, payment, media.id)
-    return {"hash": txn_hash.hex()}
+    return {"hash": txn_hash}
 
 
 # TODO - Remove username and contract_id from this endpoint
@@ -82,7 +83,7 @@ def mint(
 #         db: Session = Depends(get_db)
 # ):
 #     user = User.query.filter_by(username=username).first()
-#     w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/37SaPgF-UEVyGxqZXtDBMKykQt2Ya4Er"))
+#     w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
 #     if not user:
 #         account = w3.eth.account.create()
 #         user = User(
@@ -118,7 +119,7 @@ def mint(
 #         db: Session = Depends(get_db)
 # ):
 #     user = User.query.filter_by(email=email).first()
-#     w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/i9WqOfyE1v7xbnr4_rdSld7Z6UJecfUB"))
+#     w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
 #     if not user:
 #         account = w3.eth.account.create()
 #         user = User(

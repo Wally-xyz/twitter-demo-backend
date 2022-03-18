@@ -77,3 +77,4 @@ class Media(Base, CreatedUpdatedMixin):
     user_id = Column(String, ForeignKey("users.id"), index=True)
     user = relationship("User")
     txn_hash = Column(String)
+    is_confirmed = Column(Boolean, default=False)

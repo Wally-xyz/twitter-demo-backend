@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from web3 import Web3
 
+from app.src.config.parameter_store import Properties
 from app.src.models.models import User
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
@@ -47,7 +48,7 @@ def verify_email(
     user = db.query(User).filter(User.email == email).first()
     if user.verification_code == code:
         if not user.private_key:
-            w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/i9WqOfyE1v7xbnr4_rdSld7Z6UJecfUB"))
+            w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
             account = w3.eth.account.create()
             user.private_key = account.privateKey.hex()
             user.address = account.address
