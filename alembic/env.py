@@ -19,7 +19,7 @@ name = "wally_api"
 
 # This is the Heroku Config - https://dashboard.heroku.com/apps/wally-nft-demo/settings
 if os.environ.get("DATABASE_URL"):
-    SQLALCHEMY_DATABASE_URL = os.environ.get("DATABASE_URL")
+    SQLALCHEMY_DATABASE_URL = os.environ.get('DATABASE_URL').replace("://", "ql://", 1)
 # This is localhost (just really need to set the DB_PASSWORD env variable
 else:
     SQLALCHEMY_DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{name}"
