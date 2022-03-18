@@ -1,5 +1,4 @@
-from contextlib import contextmanager
-from typing import Dict
+import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -15,45 +14,21 @@ PORT = RelationalDB.port("5432")
 NAME = RelationalDB.name("wally_api")
 
 SQLALCHEMY_DATABASE_URL = f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}"
+
+# Set this as an override for Heroku, since they may change the username/passwords without us knowing
+if os.environ.get("DATABASE_URL"):
+    SQLALCHEMY_DATABASE_URL = os.environ.get("DATABASE_URL")
+
 engine = create_engine(url=SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
 
-# Dependency in all of the controllers
+# Dependency in the controllers
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
-
-# @contextmanager
-# def session_scope(session_args: Dict = None):
-#     """Provide a transactional scope around a series of operations."""
-#     if not session_args:
-#         session = SessionLocal()
-#     else:
-#         user = session_args.get("user", USER)
-#         password = session_args.get("password", PASSWORD)
-#         host = session_args.get("host", HOST)
-#         port = session_args.get("post", PORT)
-#         name = session_args.get("name", NAME)
-#
-#         session = sessionmaker(
-#             autocommit=False,
-#             autoflush=False,
-#             bind=create_engine(
-#                 f"postgresql://{user}:{password}@{host}:{port}/{name}"
-#             )
-#         )()
-#     try:
-#         yield session
-#         session.commit()
-#     except:
-#         session.rollback()
-#         raise
-#     finally:
-#         session.close()
