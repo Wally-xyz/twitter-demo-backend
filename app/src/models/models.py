@@ -47,6 +47,7 @@ class User(Base, CreatedUpdatedMixin):
     email = Column(String, index=True, unique=True)
     verified = Column(Boolean, default=False)
     verification_code = Column(String)
+    admin = Column(Boolean, default=False)
 
 
 class Payment(Base, CreatedUpdatedMixin):
