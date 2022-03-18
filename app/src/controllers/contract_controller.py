@@ -13,17 +13,24 @@ from eth_utils import to_bytes
 
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
+from app.src.services.auth_service import get_current_user_id
+from app.src.services.user_service import UserService
 
 router = APIRouter(prefix="/contracts")
-# logger = LoggerConfig(__name__).get()
+logger = LoggerConfig(__name__).get()
 
 
-@router.post("/deploy")
+@router.post("/deploy", include_in_schema=False)
 def deploy_base_contract(
         full_name: str = "Reddit Year in Review",
         short_name: str = "RYIR",
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_db),
+        user_id: str = Depends(get_current_user_id),
 ):
+    user = UserService.get(db, user_id)
+    if not user.admin:
+        raise Exception("Unauthorized to deploy contract")
+    logger.warning(f"User: {user.id} deploying contract name: {full_name}")
     class_name = "".join(full_name.split())
     contract = ("""
     //Contract based on https://docs.openzeppelin.com/contracts/3.x/erc721

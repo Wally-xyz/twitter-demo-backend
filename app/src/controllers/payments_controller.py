@@ -24,7 +24,7 @@ def create_checkout_session(
 # This is hit from the redirect of the PaymentURL thing
 # Ideally should be a PUT
 @router.get("/{payment_id}/record")
-def create_checkout_session(
+def record_payment(
         success: bool,
         payment_id: str,
         user_id: str = Depends(get_current_user_id),

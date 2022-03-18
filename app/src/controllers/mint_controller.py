@@ -13,6 +13,7 @@ from app.src.services.auth_service import get_current_user_id
 from app.src.services.email_service import EmailService
 from app.src.services.media_service import MediaService
 from app.src.services.payment_service import PaymentService
+from app.src.services.user_service import UserService
 
 router = APIRouter(prefix="/mint")
 logger = LoggerConfig(__name__).get()
@@ -23,7 +24,7 @@ def get_media(
         db: Session = Depends(get_db),
         user_id: str = Depends(get_current_user_id)
 ):
-    user = db.query(User).filter(User.id == user_id).first()
+    user = UserService.get(db, user_id)
     media = db.query(Media).filter(Media.user == user).order_by(Media.created_at.desc()).first()
     # TODO - Return media view
     return {'data': media.media_ipfs_hash}
@@ -35,7 +36,7 @@ def mint(
         db: Session = Depends(get_db),
         user_id: str = Depends(get_current_user_id)
 ):
-    user = db.query(User).filter(User.id == user_id).first()
+    user = UserService.get(db, user_id)
     if not media_id:
         media = db.query(Media).filter(Media.user == user).first()
     else:
