@@ -38,6 +38,7 @@ class PaymentService:
         logger.info(checkout_session)
         payment.stripe_url = checkout_session.url
         payment.stripe_id = checkout_session.id
+        payment.intent_id = checkout_session.payment_intent
         payment.amount_cents = checkout_session.amount_total
         db.commit()
         return checkout_session.url
@@ -47,12 +48,22 @@ class PaymentService:
     @staticmethod
     def update(db: Session, user_id: str, payment_id: str, success: bool) -> Payment:
         payment = db.query(Payment).filter(Payment.id == payment_id).first()
+        result = stripe.PaymentIntent.retrieve(payment.intent_id)
+        logger.info(result)
+        if result.status == "succeeded":
+            payment.intent_confirmed = True
+        else:
+            raise Exception("Unable to confirm payment")
+
         if payment.user_id != user_id:
             raise Exception("Unauthorized update")
+
+        # TODO - Might be able to get rid of this
         if success:
             payment.status = PaymentStatus.SUCCESS
         else:
             payment.status = PaymentStatus.FAILURE
+
         db.commit()
         return payment
 
