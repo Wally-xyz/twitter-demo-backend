@@ -1,6 +1,7 @@
 import json
 import os
 import rlp
+import solcx
 
 from solcx import compile_source, install_solc
 from fastapi import APIRouter, Depends
@@ -62,16 +63,15 @@ def deploy_base_contract(
         }
     }
     """ % { "full_name": full_name, "short_name": short_name, "class_name": class_name }).strip()
-    install_solc("0.6.0")
-    compiled_sol = compile_source(contract)
-    contract_interface = compiled_sol["<stdin>:RedditYearinReview"]
+    install_solc("0.7.3")
+    compiled_sol = solcx.compile_source(contract)
+    contract_interface = compiled_sol[f"<stdin>:{full_name}"]
     bytecode = contract_interface['bin']
     abi = contract_interface['abi']
     w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
     Minter = w3.eth.contract(abi=abi, bytecode=bytecode)
     gas = int(Minter.constructor().estimateGas() * 1.5)
-    public_address='0x174270d8738c508fe13D460b855C4b04D7a052f3'
-    nonce = w3.eth.getTransactionCount(public_address)
+    nonce = w3.eth.getTransactionCount(Properties.vault_public_key)
     built_txn = Minter.constructor().buildTransaction({
         'nonce': nonce,
         'gas': gas,
@@ -84,7 +84,7 @@ def deploy_base_contract(
     # e.g. return sha3(rlp.encode([normalize_address(sender), nonce]))[12:]
     # normalize_address as bytes, nonce as int
     # take substring of hash output bytes and convert to hex string
-    sender_bytes = to_bytes(hexstr=public_address)
+    sender_bytes = to_bytes(hexstr=Properties.vault_public_key)
     raw = rlp.encode([sender_bytes, nonce])
     h = w3.keccak(raw)
     address_bytes = h[12:]
