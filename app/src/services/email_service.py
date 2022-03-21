@@ -16,3 +16,14 @@ class EmailService:
             html_content=f'Use the following code: <strong>{code}</strong>')
         sg = SendGridAPIClient(Properties.sendgrid_api_key)
         sg.send(message)
+
+    @staticmethod
+    def send_mined_email(user: User, tx_hash: str):
+        message = Mail(
+            from_email='hello@wallylabs.xyz',
+            to_emails=user.email,
+            subject='Your NFT has been Mined',
+            html_content=f'Congratulations, your NFT has been minted. View it on etherscan: '
+                         f'https://etherscan.io/tx/{tx_hash}')
+        sg = SendGridAPIClient(Properties.sendgrid_api_key)
+        sg.send(message)

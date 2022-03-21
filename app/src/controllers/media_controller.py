@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
-from app.src.controllers.auth_controller import get_current_user_id
+from app.src.models.models import User, Media
+from app.src.services.auth_service import get_current_user_id
 from app.src.requests.create_media_request import CreateMediaRequest, CreateMediaData
 from app.src.services.media_service import MediaService
 from app.src.services.user_service import UserService
@@ -28,16 +29,38 @@ def upload_to_ipfs(
     return MediaView(media)
 
 
-@router.put("/{media_id}")
-def update_media(
-        media_id: str,
-        req: CreateMediaRequest,
+@router.get("/recent")
+def get_recent_media(
         db: Session = Depends(get_db),
         user_id: str = Depends(get_current_user_id)
 ):
-    media = MediaService.update(db, media_id, user_id, req.to_data())
+    user = UserService.get(db, user_id)
+    media = db.query(Media).filter(Media.user == user).order_by(Media.created_at.desc()).first()
     return MediaView(media)
 
+
+@router.get("/{media_id}")
+def get_media_by_id(
+        media_id: str,
+        db: Session = Depends(get_db),
+        user_id: str = Depends(get_current_user_id)
+):
+    media = MediaService.get(db, media_id)
+    if media.user_id != user_id:
+        raise Exception("Unauthorized")
+    return MediaView(media)
+
+#
+# @router.put("/{media_id}")
+# def update_media(
+#         media_id: str,
+#         req: CreateMediaRequest,
+#         db: Session = Depends(get_db),
+#         user_id: str = Depends(get_current_user_id)
+# ):
+#     media = MediaService.update(db, media_id, user_id, req.to_data())
+#     return MediaView(media)
+# 
 
 # Authenticated
 # @router.put("/{media_id}")

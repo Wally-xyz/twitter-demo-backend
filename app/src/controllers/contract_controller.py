@@ -1,25 +1,36 @@
 import json
 import os
+import rlp
 
 import solcx
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from web3 import Web3
-from web3.types import ABI
+
+from app.src.config.parameter_store import Properties
+from app.src.models.models import ABI
+from eth_utils import to_bytes
 
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
+from app.src.services.auth_service import get_current_user_id
+from app.src.services.user_service import UserService
 
 router = APIRouter(prefix="/contracts")
-# logger = LoggerConfig(__name__).get()
+logger = LoggerConfig(__name__).get()
 
 
-@router.post("/deploy")
+@router.post("/deploy", include_in_schema=False)
 def deploy_base_contract(
         full_name: str = "Reddit Year in Review",
         short_name: str = "RYIR",
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_db),
+        user_id: str = Depends(get_current_user_id),
 ):
+    user = UserService.get(db, user_id)
+    if not user.admin:
+        raise Exception("Unauthorized to deploy contract")
+    logger.warning(f"User: {user.id} deploying contract name: {full_name}")
     class_name = "".join(full_name.split())
     contract = ("""
     //Contract based on https://docs.openzeppelin.com/contracts/3.x/erc721
@@ -55,19 +66,29 @@ def deploy_base_contract(
     contract_interface = compiled_sol["<stdin>:RedditYearinReview"]
     bytecode = contract_interface['bin']
     abi = contract_interface['abi']
-    w3 = Web3(Web3.HTTPProvider("https://eth-ropsten.alchemyapi.io/v2/37SaPgF-UEVyGxqZXtDBMKykQt2Ya4Er"))
+    w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
     Minter = w3.eth.contract(abi=abi, bytecode=bytecode)
     gas = int(Minter.constructor().estimateGas() * 1.5)
-    maxPriorityFee = w3.eth.max_priority_fee
+    public_address='0x174270d8738c508fe13D460b855C4b04D7a052f3'
+    nonce = w3.eth.getTransactionCount(public_address)
     built_txn = Minter.constructor().buildTransaction({
-        'nonce': w3.eth.getTransactionCount(w3.eth.account.from_key(os.environ.get("PRIVATE_KEY")).address),
+        'nonce': nonce,
         'gas': gas,
-        'maxPriorityFeePerGas': w3.eth.max_priority_fee,
     })
-    signed_txn = w3.eth.account.signTransaction(built_txn, private_key=os.environ.get("PRIVATE_KEY"))
+    signed_txn = w3.eth.account.signTransaction(built_txn, private_key=Properties.vault_private_key)
     tx_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-    txn_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-    contract_address = txn_receipt.contractAddress
+
+    # https://ethereum.stackexchange.com/questions/760/how-is-the-address-of-an-ethereum-contract-computed
+    # answer by Mikko Ohtamaa
+    # e.g. return sha3(rlp.encode([normalize_address(sender), nonce]))[12:]
+    # normalize_address as bytes, nonce as int
+    # take substring of hash output bytes and convert to hex string
+    sender_bytes = to_bytes(hexstr=public_address)
+    raw = rlp.encode([sender_bytes, nonce])
+    h = w3.keccak(raw)
+    address_bytes = h[12:]
+    contract_address = Web3.toChecksumAddress(address_bytes)
+
     abi_entry = ABI(
         contract_id=tx_hash.hex(),
         data=json.dumps(abi),
@@ -78,5 +99,4 @@ def deploy_base_contract(
     return {
         'url': 'http://localhost:8000/mint?contract_id=%(contract_id)s' % { "contract_id": tx_hash.hex() },
         'gas': gas,
-        'maxPriorityFeePerGas': maxPriorityFee,
     }
