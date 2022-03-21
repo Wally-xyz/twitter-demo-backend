@@ -1,7 +1,6 @@
 import json
 import os
 import rlp
-import solcx
 
 from solcx import compile_source, install_solc
 from fastapi import APIRouter, Depends
@@ -63,8 +62,9 @@ def deploy_base_contract(
         }
     }
     """ % { "full_name": full_name, "short_name": short_name, "class_name": class_name }).strip()
+
     install_solc("0.7.3")
-    compiled_sol = solcx.compile_source(contract)
+    compiled_sol = compile_source(contract)
     contract_interface = compiled_sol[f"<stdin>:{full_name}"]
     bytecode = contract_interface['bin']
     abi = contract_interface['abi']
