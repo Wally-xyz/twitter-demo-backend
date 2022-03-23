@@ -5,6 +5,7 @@ from app.src.config.logger_config import LoggerConfig
 from app.src.config.parameter_store import Properties
 from app.src.models.models import Payment, User
 from app.src.models.typedefs.PaymentStatus import PaymentStatus
+from app.src.services.user_service import UserService
 
 logger = LoggerConfig(__name__).get()
 
@@ -12,27 +13,25 @@ logger = LoggerConfig(__name__).get()
 class PaymentService:
     stripe.api_key = Properties.stripe_api_key
 
-    # Payment
     @staticmethod
     def create_payment(db: Session, user_id: str) -> str:
         payment = Payment(user_id=user_id, status=PaymentStatus.PENDING)
+        user = UserService.get(db, user_id)
         db.add(payment)
         db.commit()
         db.refresh(payment)
+        success_url = Properties.frontend_domain + f'?success=True'
+        cancel_url = Properties.frontend_domain + f'?success=False'
         checkout_session = stripe.checkout.Session.create(
             line_items=[
                 {
-                    # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
                     'price': Properties.stripe_price_id,
-                    # TODO - Calculate on demand? Pull from parameter store?
                     'quantity': 1,
                 },
             ],
             mode='payment',
-            # It seems like this should redirect to a FE url?
-            # Which then pings our backend with additional information...?
-            success_url=Properties.frontend_domain + f'?success=True',
-            cancel_url=Properties.frontend_domain + f'?success=False',
+            success_url=success_url,
+            cancel_url=success_url if user.admin else cancel_url,
         )
         # Figure it's good to save this just in case, not sure what other data we get?
         logger.info(checkout_session)
@@ -43,8 +42,6 @@ class PaymentService:
         db.commit()
         return checkout_session.url
 
-    # Update Payment
-    # Payment
     @staticmethod
     def update(db: Session, user_id: str, payment_id: str, success: bool) -> Payment:
         payment = db.query(Payment).filter(Payment.id == payment_id).first()
