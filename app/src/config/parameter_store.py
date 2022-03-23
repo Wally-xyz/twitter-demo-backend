@@ -55,6 +55,7 @@ class Properties:
         self.alchemy_auth_token = get_api_param("alchemy_auth_token")
         self.kms_db_key_alias = get_api_param("kms_db_key_alias")
         # self.kms_vault_key = get_api_param("kms_db_key")
+        self.stripe_price_id = get_api_param("stripe_price_id", "price_1KdEBBBRQJlh59702ERTzDWh")
 
 
 # NOTE(john) - The purpose of these is to load the SSM params once on APP startup
