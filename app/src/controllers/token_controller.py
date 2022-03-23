@@ -1,3 +1,4 @@
+import boto3
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from web3 import Web3
@@ -14,6 +15,7 @@ from app.src.services.user_service import UserService
 
 router = APIRouter(prefix="/tokens")
 logger = LoggerConfig(__name__).get()
+kms_client = boto3.client("kms")
 
 
 class Message(BaseModel):
@@ -45,5 +47,9 @@ def sign_message(
     ex_msg = bytearray.fromhex(message_data.message[2:]).decode()
     message = encode_defunct(text=ex_msg)
     w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
-    signed_msg = w3.eth.account.sign_message(message, private_key=user.private_key)
+    decrypted_private_key = kms_client.decrypt(
+        CiphertextBlob=user.private_key,
+        KeyId=Properties.kms_db_key_alias
+    )['Plaintext']
+    signed_msg = w3.eth.account.sign_message(message, private_key=decrypted_private_key)
     return {'result': signed_msg.signature.hex()}
