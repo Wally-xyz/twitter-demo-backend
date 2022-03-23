@@ -22,8 +22,8 @@ logger = LoggerConfig(__name__).get()
 
 @router.post("/deploy", include_in_schema=False)
 def deploy_base_contract(
-        full_name: str = "Reddit Year in Review",
-        short_name: str = "RYIR",
+        full_name: str = "Wally",
+        short_name: str = "WALLY",
         db: Session = Depends(get_db),
         user_id: str = Depends(get_current_user_id),
 ):
@@ -47,6 +47,13 @@ def deploy_base_contract(
         Counters.Counter private _tokenIds;
 
         constructor() public ERC721("%(full_name)s", "%(short_name)s") {}
+
+        function contractURI()
+            public view 
+            returns (string memory)
+        {
+            return "https://www.wallylabs.xyz/demo-contract-metadata.json";
+        }
 
         function mintNFT(address recipient, string memory tokenURI)
             public onlyOwner

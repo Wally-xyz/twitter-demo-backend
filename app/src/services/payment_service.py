@@ -23,7 +23,7 @@ class PaymentService:
             line_items=[
                 {
                     # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-                    'price': 'price_1KdEBBBRQJlh59702ERTzDWh',
+                    'price': Properties.stripe_price_id,
                     # TODO - Calculate on demand? Pull from parameter store?
                     'quantity': 1,
                 },
