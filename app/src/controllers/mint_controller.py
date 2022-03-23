@@ -43,7 +43,7 @@ def mint(
         media = MediaService.get(db, media_id)
     logger.info(f"Minting media: {media.id}")
     payment = PaymentService.open_payment(db, user)
-    if not payment:
+    if not payment and not user.admin:
         raise Exception("No record of payment. If you believe this is in error, contact us at: ...")
 
     w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
@@ -69,7 +69,8 @@ def mint(
     # NOTE - Is this the right value to be storing as the txn_hash?
     media.txn_hash = txn_hash
     db.commit()
-    PaymentService.associate_media_with_payment(db, payment, media.id)
+    if payment:
+        PaymentService.associate_media_with_payment(db, payment, media.id)
     return {"hash": txn_hash}
 
 
