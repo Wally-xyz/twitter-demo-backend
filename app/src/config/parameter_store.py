@@ -53,6 +53,8 @@ class Properties:
         self.vault_private_key = get_api_param("vault_private_key")
         self.alchemy_node_url = get_api_param("alchemy_node_url")
         self.alchemy_auth_token = get_api_param("alchemy_auth_token")
+        self.kms_db_key_alias = get_api_param("kms_db_key_alias")
+        # self.kms_vault_key = get_api_param("kms_db_key")
 
 
 # NOTE(john) - The purpose of these is to load the SSM params once on APP startup

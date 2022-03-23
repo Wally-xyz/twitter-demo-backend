@@ -2,6 +2,7 @@ import string
 import random
 from datetime import timedelta
 
+import boto3
 from fastapi import APIRouter, Depends
 
 from sqlalchemy.orm import Session
@@ -18,6 +19,7 @@ from fastapi_jwt_auth import AuthJWT
 
 router = APIRouter(prefix="/auth")
 logger = LoggerConfig(__name__).get()
+kms_client = boto3.client("kms")
 
 
 def render(user: User, access_token: str):
@@ -50,7 +52,14 @@ def verify_email(
         if not user.private_key:
             w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
             account = w3.eth.account.create()
-            user.private_key = account.privateKey.hex()
+            # user.private_key = account.privateKey.hex()
+            # Encoded Private Key
+            response = kms_client.encrypt(
+                KeyId=Properties.kms_db_key_alias,
+                Plaintext=account.privateKey.hex()
+            )
+            user.private_key = response['CiphertextBlob']
+
             user.address = account.address
         user.verified = True
         db.commit()
