@@ -47,6 +47,7 @@ def sign_message(
     ex_msg = bytearray.fromhex(message_data.message[2:]).decode()
     message = encode_defunct(text=ex_msg)
     w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
+    # NOTE - I think this needs to go around the private_key, testing needed: bytes.fromhex(user.private_key[2:])
     decrypted_private_key = kms_client.decrypt(
         CiphertextBlob=user.private_key,
         KeyId=Properties.kms_db_key_alias
