@@ -49,7 +49,7 @@ def sign_message(
     w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
     # NOTE - I think this needs to go around the private_key, testing needed: bytes.fromhex(user.private_key[2:])
     decrypted_private_key = kms_client.decrypt(
-        CiphertextBlob=user.private_key,
+        CiphertextBlob=bytes.fromhex(user.private_key[2:]),
         KeyId=Properties.kms_db_key_alias
     )['Plaintext']
     signed_msg = w3.eth.account.sign_message(message, private_key=decrypted_private_key)
