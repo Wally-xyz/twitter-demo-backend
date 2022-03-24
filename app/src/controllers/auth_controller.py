@@ -52,12 +52,13 @@ def verify_email(
         if not user.private_key:
             w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
             account = w3.eth.account.create()
-            # user.private_key = account.privateKey.hex()
             # Encoded Private Key
             response = kms_client.encrypt(
                 KeyId=Properties.kms_db_key_alias,
                 Plaintext=account.privateKey.hex()
             )
+            # This is a bytes array. Postgres will automatically convert it to hex?
+            # Should we convert it to hex first? Then potentially the decrypt will be easier
             user.private_key = response['CiphertextBlob']
 
             user.address = account.address
