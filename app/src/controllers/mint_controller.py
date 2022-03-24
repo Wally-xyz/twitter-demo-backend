@@ -9,14 +9,23 @@ from app.src.config.parameter_store import Properties
 from app.src.models.models import ABI, User, Media
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
+from app.src.models.typedefs.EthereumNetwork import EthereumNetwork
 from app.src.services.auth_service import get_current_user_id
-from app.src.services.email_service import EmailService
 from app.src.services.media_service import MediaService
 from app.src.services.payment_service import PaymentService
 from app.src.services.user_service import UserService
 
 router = APIRouter(prefix="/mint")
 logger = LoggerConfig(__name__).get()
+
+
+@router.get("/network")
+def get_network():
+    node_url = Properties.alchemy_node_url
+    for network in EthereumNetwork:
+        if node_url.find(network.name.lower()) > 0:
+            return {'network': network.name}
+    return {'network': 'UNKNOWN'}
 
 
 @router.get("/media")
@@ -72,7 +81,6 @@ def mint(
     if payment:
         PaymentService.associate_media_with_payment(db, payment, media.id)
     return {"hash": txn_hash}
-
 
 # TODO - Remove username and contract_id from this endpoint
 # Make it behind the authentication so it pulls the user from the logged-in session JWT token
