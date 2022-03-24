@@ -11,9 +11,14 @@ class EmailService:
     def send_verification_code(user: User, code: str):
         message = Mail(
             from_email='hello@wallylabs.xyz',
-            to_emails=user.email,
-            subject='Verify your email address',
-            html_content=f'Use the following code: <strong>{code}</strong>')
+            to_emails=user.email)
+        message.reply_to = 'mayank@wallylabs.xyz'
+        message.template_id = 'd-ec91b40826a54c2d9d324da8341461fb'
+        message.dynamic_template_data = {
+            'code': code,
+            'email': user.email,
+            'url': Properties.frontend_url + f'?code={code}&email={user.email}',
+        }
         sg = SendGridAPIClient(Properties.sendgrid_api_key)
         sg.send(message)
 

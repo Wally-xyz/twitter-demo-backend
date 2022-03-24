@@ -7,11 +7,13 @@ from fastapi import APIRouter, Depends
 
 from sqlalchemy.orm import Session
 from web3 import Web3
+from web3.middleware import geth_poa_middleware
 
 from app.src.config.parameter_store import Properties
 from app.src.models.models import User
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
+from app.src.models.typedefs.EthereumNetwork import EthereumNetwork
 from app.src.services.email_service import EmailService
 from app.src.services.user_service import UserService
 from app.src.views.user_view import UserView
@@ -51,13 +53,15 @@ def verify_email(
     if user.verification_code == code:
         if not user.private_key:
             w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
+            if Properties.network == EthereumNetwork.RINKEBY:
+                w3.middleware_onion.inject(geth_poa_middleware, layer=0)
             account = w3.eth.account.create()
             # Encoded Private Key
             response = kms_client.encrypt(
                 KeyId=Properties.kms_db_key_alias,
                 Plaintext=account.privateKey.hex()
             )
-            # This is a bytes array. Postgres will automatically convert it to hex?
+            # This is a bytes array. Postgres will automatically convert it to hex
             # Should we convert it to hex first? Then potentially the decrypt will be easier
             user.private_key = response['CiphertextBlob']
 

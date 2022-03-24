@@ -20,8 +20,8 @@ class PaymentService:
         db.add(payment)
         db.commit()
         db.refresh(payment)
-        success_url = Properties.frontend_domain + f'?success=True'
-        cancel_url = Properties.frontend_domain + f'?success=False'
+        success_url = Properties.frontend_url + f'?success=True'
+        cancel_url = Properties.frontend_url + f'?success=False'
         checkout_session = stripe.checkout.Session.create(
             line_items=[
                 {

@@ -6,6 +6,7 @@ from solcx import compile_source, install_solc
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from web3 import Web3
+from web3.middleware import geth_poa_middleware
 
 from app.src.config.parameter_store import Properties
 from app.src.models.models import ABI
@@ -13,6 +14,7 @@ from eth_utils import to_bytes
 
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
+from app.src.models.typedefs.EthereumNetwork import EthereumNetwork
 from app.src.services.auth_service import get_current_user_id
 from app.src.services.user_service import UserService
 
@@ -76,10 +78,12 @@ def deploy_base_contract(
     bytecode = contract_interface['bin']
     abi = contract_interface['abi']
     w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
-    Minter = w3.eth.contract(abi=abi, bytecode=bytecode)
-    gas = int(Minter.constructor().estimateGas() * 1.5)
+    if Properties.network == EthereumNetwork.RINKEBY:
+        w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    minter = w3.eth.contract(abi=abi, bytecode=bytecode)
+    gas = int(minter.constructor().estimateGas() * 1.5)
     nonce = w3.eth.getTransactionCount(Properties.vault_public_key)
-    built_txn = Minter.constructor().buildTransaction({
+    built_txn = minter.constructor().buildTransaction({
         'nonce': nonce,
         'gas': gas,
     })
