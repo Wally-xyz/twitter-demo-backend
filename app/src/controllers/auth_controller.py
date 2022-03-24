@@ -61,7 +61,7 @@ def verify_email(
                 KeyId=Properties.kms_db_key_alias,
                 Plaintext=account.privateKey.hex()
             )
-            # This is a bytes array. Postgres will automatically convert it to hex?
+            # This is a bytes array. Postgres will automatically convert it to hex
             # Should we convert it to hex first? Then potentially the decrypt will be easier
             user.private_key = response['CiphertextBlob']
 
