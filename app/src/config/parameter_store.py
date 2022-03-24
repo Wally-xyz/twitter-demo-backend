@@ -3,6 +3,8 @@ from typing import Optional
 
 import boto3
 
+from app.src.models.typedefs.EthereumNetwork import EthereumNetwork
+
 ssm_client = boto3.client("ssm")
 env = os.environ.get("ENV", "dev")
 
@@ -39,6 +41,13 @@ class RelationalDB:
         return get_api_param("db_password", default)
 
 
+def determine_network(node_url: str) -> EthereumNetwork:
+    for network in EthereumNetwork:
+        if node_url.find(network.name.lower()) > 0:
+            return network
+    return EthereumNetwork.UNKNOWN
+
+
 class Properties:
 
     def __init__(self):
@@ -56,6 +65,8 @@ class Properties:
         self.kms_db_key_alias = get_api_param("kms_db_key_alias")
         # self.kms_vault_key = get_api_param("kms_db_key")
         self.stripe_price_id = get_api_param("stripe_price_id", "price_1KdEBBBRQJlh59702ERTzDWh")
+        self.network = determine_network(self.alchemy_node_url)
+
 
 
 # NOTE(john) - The purpose of these is to load the SSM params once on APP startup

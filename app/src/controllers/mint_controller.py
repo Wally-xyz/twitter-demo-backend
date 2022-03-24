@@ -4,6 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends
 from web3 import Web3
 from sqlalchemy.orm import Session
+from web3.middleware import geth_poa_middleware
 
 from app.src.config.parameter_store import Properties
 from app.src.models.models import ABI, User, Media
@@ -21,11 +22,7 @@ logger = LoggerConfig(__name__).get()
 
 @router.get("/network")
 def get_network():
-    node_url = Properties.alchemy_node_url
-    for network in EthereumNetwork:
-        if node_url.find(network.name.lower()) > 0:
-            return {'network': network.name}
-    return {'network': 'UNKNOWN'}
+    return {'network': Properties.network.name}
 
 
 @router.get("/media")
@@ -56,6 +53,8 @@ def mint(
         raise Exception("No record of payment. If you believe this is in error, contact us at: ...")
 
     w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
+    if Properties.network == EthereumNetwork.RINKEBY:
+        w3.middleware_onion.inject(geth_poa_middleware, layer=0)
     # Needs to be set to estimate gas for transaction
     w3.eth.defaultAccount = Properties.vault_public_key
     address = user.address
