@@ -1,6 +1,5 @@
 import io
 import json
-import logging
 import uuid
 from typing import Optional
 
@@ -82,7 +81,8 @@ class MediaService:
 
         # Also put the file to S3
         s3_key = str(uuid.uuid4())
-        boto3.client("s3").upload_fileobj(io.BytesIO(contents), Properties.media_bucket, s3_key)
+        boto3.client("s3").upload_fileobj(io.BytesIO(contents), Properties.media_bucket, s3_key,
+                                          ExtraArgs={'ACL': 'public-read'})
 
         media_object = Media(json_ipfs_hash=json_ipfs_hash, media_ipfs_hash=media_ipfs_hash,
                              filename=filename, s3_key=s3_key, user_id=user.id, name=data.name,
