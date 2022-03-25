@@ -1,23 +1,17 @@
-import logging
-
-from sqlalchemy.sql.expression import null
-
 from app.src.config.database_config import Base
 from app.src.models.helpers import generate_id
+from app.src.models.typedefs.PaymentStatus import PaymentStatus
 from sqlalchemy import (
     Column,
     ForeignKey,
     String,
-    Table,
     DateTime,
     Boolean,
     func,
-    Date,
-    UniqueConstraint, Enum, Integer,
+    Enum,
+    Integer,
 )
 from sqlalchemy.orm import relationship
-
-from app.src.models.typedefs.PaymentStatus import PaymentStatus
 
 
 class CreatedUpdatedMixin(object):
