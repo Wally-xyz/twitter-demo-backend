@@ -23,6 +23,7 @@ class PaymentService:
         success_url = Properties.frontend_url + f'?success=True'
         cancel_url = Properties.frontend_url + f'?success=False'
         checkout_session = stripe.checkout.Session.create(
+            customer_email=user.email,
             line_items=[
                 {
                     'price': Properties.stripe_price_id,

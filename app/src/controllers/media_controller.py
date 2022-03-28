@@ -3,6 +3,7 @@ import logging
 from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 
+from app.src.clients.alchemy_client import AlchemyClient
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
 from app.src.models.models import User, Media
@@ -26,6 +27,19 @@ def upload_to_ipfs(
 ):
     user = UserService.get(db, user_id)
     media = MediaService.upload_to_ipfs(db, user, upload_file, CreateMediaData(name, description))
+    return MediaView(media)
+
+
+@router.get("/alchemy_client_recent")
+def alchemy_client_recent(
+        db: Session = Depends(get_db),
+        user_id: str = Depends(get_current_user_id)
+):
+    user = UserService.get(db, user_id)
+    nfts = AlchemyClient.get_nfts(user.address)
+    media = db.query(Media).filter(Media.user == user).order_by(Media.created_at.desc()).first()
+    media.token_id = int(nfts["ownedNfts"][0]["id"]["tokenId"], 16)  # Passed back in Hex
+    db.commit()
     return MediaView(media)
 
 
