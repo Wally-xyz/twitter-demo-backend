@@ -26,8 +26,11 @@ class PaymentService:
             customer_email=user.email,
             line_items=[
                 {
-                    'price': Properties.stripe_price_id,
+                    'name': 'Wally NFT',
                     'quantity': 1,
+                    'images': ['https://www.wallylabs.xyz/logo.png'],
+                    'amount': 9999,
+                    'currency': 'usd'
                 },
             ],
             mode='payment',
