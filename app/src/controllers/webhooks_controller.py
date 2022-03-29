@@ -37,7 +37,7 @@ def alchemy_mined_webhook(
     except Exception:
         logger.warn("Unable to get nfts transactionID data")
     db.commit()
-    EmailService.send_mined_email(media.user, media.txn_hash)
+    EmailService.send_mined_email(media)
     return {"msg": "OK"}
 
 
