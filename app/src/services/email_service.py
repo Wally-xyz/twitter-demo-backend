@@ -33,7 +33,7 @@ class EmailService:
             'etherscan_url': f'https://etherscan.io/tx/{tx_hash}',
             'img_url': 'https://www.wallylabs.xyz/logo.png',
             'opensea_url': 'https://testnets.opensea.io/collection/wally',
-            'url': Properties.frontend_url + f'?step=4'
+            'url': Properties.frontend_url + f'?step=5'
         }
         sg = SendGridAPIClient(Properties.sendgrid_api_key)
         sg.send(message)
