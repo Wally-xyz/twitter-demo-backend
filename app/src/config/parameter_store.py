@@ -87,7 +87,6 @@ class Properties:
         self.network = determine_network(self.alchemy_node_url)
         self.etherscan_url = determine_etherscan_url(self.network)
         self.opensea_url = determine_opensea_url(self.network)
-        self.opensea_collection_url = f"{self.opensea_url}/assets/{self.vault_public_key}"
 
 
 # NOTE(john) - The purpose of these is to load the SSM params once on APP startup

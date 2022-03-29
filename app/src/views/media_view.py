@@ -4,6 +4,8 @@ from typing import Optional
 from app.src.config.parameter_store import Properties
 from app.src.models.models import Media
 
+opensea_collection_url = f"{Properties.opensea_url}/assets"
+
 
 @dataclass
 class MediaView:
@@ -25,5 +27,5 @@ class MediaView:
         self.url = media.ipfs_image_url
         self.s3_url = f"https://{Properties.media_bucket}.s3.amazonaws.com/{media.s3_key}"
         self.etherscan_url = f"{Properties.etherscan_url}/tx/{media.txn_hash}" if media.txn_hash else None
-        self.opensea_url = f"{Properties.opensea_collection_url}/{media.token_id}" if media.token_id else None
+        self.opensea_url = f"{opensea_collection_url}/{media.address}/{media.token_id}" if media.token_id else None
         self.nonce = media.nonce

@@ -13,6 +13,7 @@ charset-normalizer==2.0.12
 click==8.0.4
 cytoolz==0.11.2
 ddtrace==0.57.4
+email-validator==1.1.3
 eth-abi==2.1.1
 eth-account==0.5.7
 eth-hash==0.3.2
