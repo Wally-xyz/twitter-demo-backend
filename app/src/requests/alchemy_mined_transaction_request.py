@@ -3,6 +3,9 @@ from pydantic import BaseModel
 
 class AlchemyFullTransaction(BaseModel):
     hash: str
+    gas: str
+    gasPrice: str
+    nonce: str
 
 
 class AlchemyMinedTransaction(BaseModel):

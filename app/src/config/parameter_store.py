@@ -48,6 +48,24 @@ def determine_network(node_url: str) -> EthereumNetwork:
     return EthereumNetwork.UNKNOWN
 
 
+def determine_etherscan_url(network: EthereumNetwork) -> str:
+    if network == EthereumNetwork.MAINNET:
+        return "https://etherscan.io"
+    elif network == EthereumNetwork.RINKEBY:
+        return "https://rinkeby.etherscan.io"
+    elif network == EthereumNetwork.ROBSTEN:
+        return "https://ropsten.etherscan.io"
+    else:
+        return "https://etherscan.io"
+
+
+def determine_opensea_url(network: EthereumNetwork) -> str:
+    if network == EthereumNetwork.MAINNET:
+        return "https://opensea.io"
+    else:
+        return "https://testnets.opensea.io"
+
+
 class Properties:
 
     def __init__(self):
@@ -61,12 +79,15 @@ class Properties:
         self.vault_public_key = get_api_param("vault_public_key")
         self.vault_private_key = get_api_param("vault_private_key")
         self.alchemy_node_url = get_api_param("alchemy_node_url")
+        self.alchemy_api_key = get_api_param("alchemy_api_key")
         self.alchemy_auth_token = get_api_param("alchemy_auth_token")
         self.kms_db_key_alias = get_api_param("kms_db_key_alias")
         # self.kms_vault_key = get_api_param("kms_db_key")
         self.stripe_price_id = get_api_param("stripe_price_id", "price_1KdEBBBRQJlh59702ERTzDWh")
         self.network = determine_network(self.alchemy_node_url)
-
+        self.etherscan_url = determine_etherscan_url(self.network)
+        self.opensea_url = determine_opensea_url(self.network)
+        self.opensea_collection_url = f"{self.opensea_url}/assets/{self.vault_public_key}"
 
 
 # NOTE(john) - The purpose of these is to load the SSM params once on APP startup
