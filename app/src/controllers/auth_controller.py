@@ -4,6 +4,7 @@ from datetime import timedelta
 
 import boto3
 from fastapi import APIRouter, Depends
+from pydantic import EmailStr
 
 from sqlalchemy.orm import Session
 from web3 import Web3
@@ -30,7 +31,7 @@ def render(user: User, access_token: str):
 
 @router.post("/sendcode")
 def create_or_resend_code(
-        email: str,
+        email: EmailStr,
         db: Session = Depends(get_db),
 ):
     user = UserService.get_by_email(db, email)
@@ -45,7 +46,7 @@ def create_or_resend_code(
 
 @router.post("/verifyemail")
 def verify_email(
-        email: str,
+        email: EmailStr,
         code: str,
         db: Session = Depends(get_db),
 ):
