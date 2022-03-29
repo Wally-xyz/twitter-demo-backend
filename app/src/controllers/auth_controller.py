@@ -46,7 +46,7 @@ def create_or_resend_code(
 
 @router.post("/verifyemail")
 def verify_email(
-        email: EmailStr,
+        email: str,
         code: str,
         db: Session = Depends(get_db),
 ):
