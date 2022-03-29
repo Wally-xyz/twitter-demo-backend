@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.src.models.models import User
@@ -19,3 +20,7 @@ class UserService:
         if not user:
             raise Exception(f"User with id {user_id} not found")
         return user
+
+    @staticmethod
+    def get_by_email(db: Session, email: str) -> User:
+        return db.query(User).filter(func.lower(User.email) == email.lower()).first()
