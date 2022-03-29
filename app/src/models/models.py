@@ -78,4 +78,5 @@ class Media(Base, CreatedUpdatedMixin):
     is_confirmed = Column(Boolean, default=False)
     nonce = Column(String)
     token_id = Column(Integer)
-    alchemy = Column(String)
+    address = Column(String)
+
