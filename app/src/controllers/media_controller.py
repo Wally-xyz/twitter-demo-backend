@@ -37,6 +37,7 @@ def alchemy_client_recent(
 ):
     user = UserService.get(db, user_id)
     nfts = AlchemyClient.get_nfts(user.address)
+    logger.info(f"Alchemy NFT Response: {nfts}")
     media = db.query(Media).filter(Media.user == user).order_by(Media.created_at.desc()).first()
     media.token_id = int(nfts["ownedNfts"][0]["id"]["tokenId"], 16)  # Passed back in Hex
     db.commit()
