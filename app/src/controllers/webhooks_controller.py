@@ -12,6 +12,7 @@ from app.src.requests.alchemy_mined_transaction_request import AlchemyMinedTrans
 from app.src.services.email_service import EmailService
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
+from app.src.services.media_service import MediaService
 
 router = APIRouter(prefix="/webhooks")
 logger = LoggerConfig(__name__).get()
@@ -32,10 +33,7 @@ def alchemy_mined_webhook(
     media.nonce = req.fullTransaction.nonce
     try:
         nfts = AlchemyClient.get_nfts(media.user.address)
-        # TODO - This should filter through the ownedNFTs and properly pick the one associated with this txnHash
-        media.transactionId = int(nfts["ownedNfts"][0]["id"]["tokenId"], 16)
-        if not media.address:
-            media.address = nfts["ownedNfts"][0]["contract"]["address"]
+        MediaService.update_from_alchemy_nft_data(db, media, nfts)
     except Exception:
         logger.warn("Unable to get nfts transactionID data")
     db.commit()
