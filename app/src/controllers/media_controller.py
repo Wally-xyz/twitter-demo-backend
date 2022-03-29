@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import APIRouter, Depends, UploadFile, File
+from sqlalchemy import true
 from sqlalchemy.orm import Session
 
 from app.src.clients.alchemy_client import AlchemyClient
@@ -38,10 +39,9 @@ def alchemy_client_recent(
     user = UserService.get(db, user_id)
     nfts = AlchemyClient.get_nfts(user.address)
     logger.info(f"Alchemy NFT Response: {nfts}")
-    media = db.query(Media).filter(Media.user == user and Media.is_confirmed).order_by(Media.created_at.desc()).first()
-    media.token_id = int(nfts["ownedNfts"][0]["id"]["tokenId"], 16)  # Passed back in Hex
-    if not media.address:
-        media.address = nfts["ownedNfts"][0]["contract"]["address"]
+    media = db.query(Media)\
+        .filter(Media.user == user and Media.is_confirmed == true()).order_by(Media.created_at.desc()).first()
+    MediaService.update_from_alchemy_nft_data(db, media, nfts)
     db.commit()
     return MediaView(media)
 
