@@ -72,5 +72,9 @@ class Media(Base, CreatedUpdatedMixin):
     description = Column(String)
     user_id = Column(String, ForeignKey("users.id"), index=True)
     user = relationship("User")
+
+    # TODO - Break out the NFT Data into it's own table that is referencing media?
     txn_hash = Column(String)
     is_confirmed = Column(Boolean, default=False)
+    nonce = Column(String)
+    token_id = Column(Integer)

@@ -5,6 +5,7 @@ import json
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.src.clients.alchemy_client import AlchemyClient
 from app.src.config.parameter_store import Properties
 from app.src.models.models import Media
 from app.src.requests.alchemy_mined_transaction_request import AlchemyMinedTransaction
@@ -22,11 +23,18 @@ def alchemy_mined_webhook(
         db: Session = Depends(get_db),
 ):
     # TODO - Header validation things
+    logger.info(f"Alchemy Webhook: {req}")
     media = db.query(Media).filter(Media.txn_hash == req.fullTransaction.hash).first()
     if not media:
         logger.error(f"Webhook: {req} did not find Media with hash {req.fullTransaction.hash}")
         raise Exception("Not Found")
     media.is_confirmed = True
+    media.nonce = req.fullTransaction.nonce
+    try:
+        nfts = AlchemyClient.get_nfts(media.user.address)
+        media.transactionId = int(nfts["ownedNfts"][0]["id"]["tokenId"], 16)
+    except Exception:
+        logger.warn("Unable to get nfts transactionID data")
     db.commit()
     EmailService.send_mined_email(media.user, media.txn_hash)
     return {"msg": "OK"}

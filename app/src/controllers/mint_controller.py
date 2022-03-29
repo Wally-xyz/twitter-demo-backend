@@ -79,6 +79,7 @@ def mint(
     db.commit()
     if payment:
         PaymentService.associate_media_with_payment(db, payment, media.id)
+    # TODO - Return Media View here instead of hash
     return {"hash": txn_hash}
 
 # TODO - Remove username and contract_id from this endpoint
