@@ -32,7 +32,10 @@ def alchemy_mined_webhook(
     media.nonce = req.fullTransaction.nonce
     try:
         nfts = AlchemyClient.get_nfts(media.user.address)
+        # TODO - This should filter through the ownedNFTs and properly pick the one associated with this txnHash
         media.transactionId = int(nfts["ownedNfts"][0]["id"]["tokenId"], 16)
+        if not media.address:
+            media.address = nfts["ownedNfts"][0]["contract"]["address"]
     except Exception:
         logger.warn("Unable to get nfts transactionID data")
     db.commit()
