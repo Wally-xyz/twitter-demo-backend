@@ -23,7 +23,7 @@ def alchemy_mined_webhook(
         req: AlchemyMinedTransaction,
         db: Session = Depends(get_db),
 ):
-    # TODO - Header validation things
+    # TODO - Header validation things (ie - confirm this request came from Alchemy not some random thing/scam)
     logger.info(f"Alchemy Webhook: {req}")
     media = db.query(Media).filter(Media.txn_hash == req.fullTransaction.hash).first()
     if not media:
