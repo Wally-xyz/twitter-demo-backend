@@ -76,7 +76,7 @@ def mint(
     # EmailService.send_minted_email(user, txn_hash.hex())
     # NOTE - Is this the right value to be storing as the txn_hash?
     media.txn_hash = txn_hash
-    media.address = abi.address
+    media.address = contract.address
     db.commit()
     if payment:
         PaymentService.associate_media_with_payment(db, payment, media.id)
