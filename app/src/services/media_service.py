@@ -1,7 +1,7 @@
 import io
 import json
 import uuid
-from typing import Optional
+from typing import Optional, Dict, Any
 
 import boto3
 import requests
@@ -39,6 +39,17 @@ class MediaService:
         db.commit()
         db.refresh(media_object)
         return media_object
+
+    @staticmethod
+    def update_from_alchemy_nft_data(db: Session, media: Media, nfts: Dict[str, Any]):
+        # NOTE - We are making an assumption that the media here correlates to the most recent NFT owned by this user
+        # NOTE - Should filter through the ownedNFTs and properly pick the one associated with this txnHash
+        most_recent_nft = nfts["ownedNfts"][-1]
+        if not media.token_id:
+            media.token_id = int(most_recent_nft["id"]["tokenId"], 16)
+        if not media.address:
+            media.address = most_recent_nft["contract"]["address"]
+        db.commit()
 
     # TODO - Refactor some of this to pinata client
     @staticmethod
