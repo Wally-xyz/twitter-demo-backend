@@ -40,7 +40,8 @@ def alchemy_client_recent(
     logger.info(f"Alchemy NFT Response: {nfts}")
     media = db.query(Media).filter(Media.user == user and Media.is_confirmed).order_by(Media.created_at.desc()).first()
     media.token_id = int(nfts["ownedNfts"][0]["id"]["tokenId"], 16)  # Passed back in Hex
-    media.address = nfts["ownedNfts"][0]["contract"]["address"]
+    if not media.address:
+        media.address = nfts["ownedNfts"][0]["contract"]["address"]
     db.commit()
     return MediaView(media)
 
