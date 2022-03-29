@@ -33,7 +33,7 @@ def create_or_resend_code(
         email: str,
         db: Session = Depends(get_db),
 ):
-    user = db.query(User).filter(User.email == email).first()
+    user = UserService.get_by_email(db, email)
     if not user:
         user = UserService.create_from_email(db=db, email=email)
     code = ''.join(random.choice(string.ascii_uppercase) for _ in range(6))
@@ -49,7 +49,7 @@ def verify_email(
         code: str,
         db: Session = Depends(get_db),
 ):
-    user = db.query(User).filter(User.email == email).first()
+    user = UserService.get_by_email(db, email)
     if user.verification_code == code:
         if not user.private_key:
             w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
