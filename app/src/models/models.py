@@ -79,3 +79,4 @@ class Media(Base, CreatedUpdatedMixin):
     nonce = Column(String)
     token_id = Column(Integer)
     address = Column(String)
+
