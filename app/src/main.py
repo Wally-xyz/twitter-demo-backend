@@ -60,9 +60,7 @@ origins = [
     "https://demo.wallylabs.xyz",
 ]
 
-origins_regex = [
-    'https://.*\-wallyxyz.vercel\.app',
-]
+origins_regex = 'https://.*\-wallyxyz.vercel\.app'
 
 app.add_middleware(
     CORSMiddleware,
