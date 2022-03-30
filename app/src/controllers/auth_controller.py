@@ -20,7 +20,7 @@ from app.src.services.user_service import UserService
 from app.src.views.user_view import UserView
 from fastapi_jwt_auth import AuthJWT
 
-router = APIRouter(prefix="/auth")
+router = APIRouter(prefix="/auth", tags=["users"])
 logger = LoggerConfig(__name__).get()
 kms_client = boto3.client("kms")
 

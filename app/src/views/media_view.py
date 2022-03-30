@@ -1,5 +1,6 @@
-from dataclasses import dataclass
 from typing import Optional
+
+from pydantic.dataclasses import dataclass
 
 from app.src.config.parameter_store import Properties
 from app.src.models.models import Media

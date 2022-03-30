@@ -22,12 +22,25 @@ from app.src.controllers import (
     auth_controller,
     payments_controller,
     webhooks_controller,
+    user_controller,
 )
 
 logger = LoggerConfig(__name__).get()
 logger.info("API Booting up....")
 
-app = FastAPI()
+# https://fastapi.tiangolo.com/tutorial/metadata/
+tags_metadata = [
+    {
+        "name": "users",
+        "description": "Operations with users. The **auth/login** logic is also here.",
+    },
+    {
+        "name": "media",
+        "description": "Manage media. So _fancy_ they have their own docs.",
+    },
+]
+
+app = FastAPI(openapi_tags=tags_metadata)
 app.include_router(contract_controller.router)
 app.include_router(mint_controller.router)
 app.include_router(media_controller.router)
@@ -35,7 +48,7 @@ app.include_router(token_controller.router)
 app.include_router(auth_controller.router)
 app.include_router(payments_controller.router)
 app.include_router(webhooks_controller.router)
-
+app.include_router(user_controller.router)
 
 origins = [
     "http://localhost",
