@@ -58,6 +58,7 @@ origins = [
     "https://wallet-frontend-stage.vercel.app",
     "https://demo-stage.wallylabs.xyz",
     "https://demo.wallylabs.xyz",
+    "https://*.vercel.app",
 ]
 
 app.add_middleware(
