@@ -1,5 +1,3 @@
-import logging
-
 from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy import true
 from sqlalchemy.orm import Session
@@ -7,18 +5,18 @@ from sqlalchemy.orm import Session
 from app.src.clients.alchemy_client import AlchemyClient
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
-from app.src.models.models import User, Media
+from app.src.models.models import Media
 from app.src.services.auth_service import get_current_user_id
 from app.src.requests.create_media_request import CreateMediaRequest, CreateMediaData
 from app.src.services.media_service import MediaService
 from app.src.services.user_service import UserService
 from app.src.views.media_view import MediaView
 
-router = APIRouter(prefix="/media")
+router = APIRouter(prefix="/media", tags=["media"])
 logger = LoggerConfig(__name__).get()
 
 
-@router.post("/upload")
+@router.post("/upload", response_model=MediaView)
 def upload_to_ipfs(
         name: str,
         description: str = 'Minted through https://www.wallylabs.xyz',
@@ -31,7 +29,7 @@ def upload_to_ipfs(
     return MediaView(media)
 
 
-@router.get("/alchemy_client_recent")
+@router.get("/alchemy_client_recent", response_model=MediaView)
 def alchemy_client_recent(
         db: Session = Depends(get_db),
         user_id: str = Depends(get_current_user_id)
@@ -46,7 +44,7 @@ def alchemy_client_recent(
     return MediaView(media)
 
 
-@router.get("/recent")
+@router.get("/recent", response_model=MediaView)
 def get_recent_media(
         db: Session = Depends(get_db),
         user_id: str = Depends(get_current_user_id)
@@ -56,7 +54,7 @@ def get_recent_media(
     return MediaView(media)
 
 
-@router.get("/{media_id}")
+@router.get("/{media_id}", response_model=MediaView)
 def get_media_by_id(
         media_id: str,
         db: Session = Depends(get_db),

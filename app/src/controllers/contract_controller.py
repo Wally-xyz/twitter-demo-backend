@@ -22,6 +22,11 @@ router = APIRouter(prefix="/contracts")
 logger = LoggerConfig(__name__).get()
 
 
+@router.get("/network")
+def get_network():
+    return {'network': Properties.network.name}
+
+
 @router.post("/deploy", include_in_schema=(Properties.network != EthereumNetwork.MAINNET))
 def deploy_base_contract(
         full_name: str = "Wally",

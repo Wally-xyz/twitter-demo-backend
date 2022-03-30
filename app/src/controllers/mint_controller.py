@@ -16,13 +16,8 @@ from app.src.services.media_service import MediaService
 from app.src.services.payment_service import PaymentService
 from app.src.services.user_service import UserService
 
-router = APIRouter(prefix="/mint")
+router = APIRouter(prefix="/mint", tags=["media"])
 logger = LoggerConfig(__name__).get()
-
-
-@router.get("/network")
-def get_network():
-    return {'network': Properties.network.name}
 
 
 @router.get("/media")
