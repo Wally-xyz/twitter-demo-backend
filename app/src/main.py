@@ -58,12 +58,16 @@ origins = [
     "https://wallet-frontend-stage.vercel.app",
     "https://demo-stage.wallylabs.xyz",
     "https://demo.wallylabs.xyz",
-    "https://*.vercel.app",
+]
+
+origins_regex = [
+    'https:\/\/.*\-wallyxyz.vercel\.app',
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origins_regex=origins_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
