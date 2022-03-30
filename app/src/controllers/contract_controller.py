@@ -22,7 +22,7 @@ router = APIRouter(prefix="/contracts")
 logger = LoggerConfig(__name__).get()
 
 
-@router.post("/deploy", include_in_schema=False)
+@router.post("/deploy", include_in_schema=(Properties.network != EthereumNetwork.MAINNET))
 def deploy_base_contract(
         full_name: str = "Wally",
         short_name: str = "WALLY",
@@ -30,8 +30,8 @@ def deploy_base_contract(
         user_id: str = Depends(get_current_user_id),
 ):
     user = UserService.get(db, user_id)
-    if not user.admin:
-        raise Exception("Unauthorized to deploy contract")
+    if not user.admin and Properties.network == EthereumNetwork.MAINNET:
+        raise Exception("Unauthorized to deploy contract to mainnet")
     logger.warning(f"User: {user.id} deploying contract name: {full_name}")
     class_name = "".join(full_name.split())
     contract = ("""
@@ -70,7 +70,7 @@ def deploy_base_contract(
             return newItemId;
         }
     }
-    """ % { "full_name": full_name, "short_name": short_name, "class_name": class_name }).strip()
+    """ % {"full_name": full_name, "short_name": short_name, "class_name": class_name}).strip()
 
     install_solc("0.7.3")
     compiled_sol = compile_source(contract)
@@ -109,6 +109,6 @@ def deploy_base_contract(
     db.add(abi_entry)
     db.commit()
     return {
-        'url': 'http://localhost:8000/mint?contract_id=%(contract_id)s' % { "contract_id": tx_hash.hex() },
+        'url': 'http://localhost:8000/mint?contract_id=%(contract_id)s' % {"contract_id": tx_hash.hex()},
         'gas': gas,
     }

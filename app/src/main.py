@@ -42,7 +42,9 @@ origins = [
     "http://localhost:8000",
     "http://localhost:3000",
     "https://wallet-frontend-one.vercel.app",
-    "https://wallet-frontend-stage.vercel.app"
+    "https://wallet-frontend-stage.vercel.app",
+    "https://demo-stage.wallylabs.xyz",
+    "https://demo.wallylabs.xyz",
 ]
 
 app.add_middleware(
