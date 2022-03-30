@@ -61,7 +61,7 @@ origins = [
 ]
 
 origins_regex = [
-    'https:\/\/.*\-wallyxyz.vercel\.app',
+    'https://.*\-wallyxyz.vercel\.app',
 ]
 
 app.add_middleware(
