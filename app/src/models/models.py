@@ -42,6 +42,7 @@ class User(Base, CreatedUpdatedMixin):
     verified = Column(Boolean, default=False)
     verification_code = Column(String)
     admin = Column(Boolean, default=False)
+    twitter_handle = Column(String)
 
 
 class Payment(Base, CreatedUpdatedMixin):
