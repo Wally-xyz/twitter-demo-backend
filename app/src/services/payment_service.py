@@ -14,7 +14,7 @@ class PaymentService:
     stripe.api_key = Properties.stripe_api_key
 
     @staticmethod
-    def create_payment(db: Session, user_id: str) -> str:
+    def create_payment(db: Session, user_id: str, img_url: str) -> str:
         payment = Payment(user_id=user_id, status=PaymentStatus.PENDING)
         user = UserService.get(db, user_id)
         db.add(payment)
@@ -28,7 +28,7 @@ class PaymentService:
                 {
                     'name': 'Wally NFT',
                     'quantity': 1,
-                    'images': ['https://www.wallylabs.xyz/logo.png'],
+                    'images': [img_url],
                     'amount': 9999,
                     'currency': 'usd'
                 },

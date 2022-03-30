@@ -29,6 +29,8 @@ Install Postgres on your computer (I Used the Postgres.app)
 - NOTE - For creating new Alembic migrations, you will need to export DB_PASSWORD
 - Then you should be able to run `alembic revision --autogenerate -m "create media table"`
 
+### Install system packages
+- Install libmagic `brew install libmagic`
 
 ### Authentication
 ##### TODO

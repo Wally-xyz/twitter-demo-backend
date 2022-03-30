@@ -5,6 +5,7 @@ from typing import Optional, Dict, Any
 
 import boto3
 import requests
+import magic
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
 
@@ -92,8 +93,10 @@ class MediaService:
 
         # Also put the file to S3
         s3_key = str(uuid.uuid4())
+        file_mime = magic.from_buffer(contents, mime=True)
+        logger.info(file_mime)
         boto3.client("s3").upload_fileobj(io.BytesIO(contents), Properties.media_bucket, s3_key,
-                                          ExtraArgs={'ACL': 'public-read'})
+                                          ExtraArgs={'ContentType': f'{file_mime}', 'ACL': 'public-read'})
 
         media_object = Media(json_ipfs_hash=json_ipfs_hash, media_ipfs_hash=media_ipfs_hash,
                              filename=filename, s3_key=s3_key, user_id=user.id, name=data.name,
