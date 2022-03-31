@@ -5,6 +5,7 @@ from app.src.config.logger_config import LoggerConfig
 from app.src.config.parameter_store import Properties
 from app.src.models.models import Payment, User
 from app.src.models.typedefs.PaymentStatus import PaymentStatus
+from app.src.services.media_service import MediaService
 from app.src.services.user_service import UserService
 
 logger = LoggerConfig(__name__).get()
@@ -17,6 +18,7 @@ class PaymentService:
     def create_payment(db: Session, user_id: str) -> str:
         payment = Payment(user_id=user_id, status=PaymentStatus.PENDING)
         user = UserService.get(db, user_id)
+        media = MediaService.get_most_recent(db, user)
         db.add(payment)
         db.commit()
         db.refresh(payment)
@@ -28,7 +30,7 @@ class PaymentService:
                 {
                     'name': 'Wally NFT',
                     'quantity': 1,
-                    'images': ['https://www.wallylabs.xyz/logo.png'],
+                    'images': [media.s3_url()],
                     'amount': 9999,
                     'currency': 'usd'
                 },

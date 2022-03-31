@@ -26,7 +26,7 @@ def get_media(
         user_id: str = Depends(get_current_user_id)
 ):
     user = UserService.get(db, user_id)
-    media = db.query(Media).filter(Media.user == user).order_by(Media.created_at.desc()).first()
+    media = MediaService.get_most_recent(db, user)
     # TODO - Return media view
     return {'data': media.media_ipfs_hash}
 
@@ -39,7 +39,7 @@ def mint(
 ):
     user = UserService.get(db, user_id)
     if not media_id:
-        media = db.query(Media).filter(Media.user == user).first()
+        media = MediaService.get_most_recent(db, user)
     else:
         media = MediaService.get(db, media_id)
     logger.info(f"Minting media: {media.id}")
