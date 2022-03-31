@@ -1,5 +1,6 @@
 import io
 import json
+import mimetypes
 import uuid
 from typing import Optional, Dict, Any
 
@@ -25,6 +26,10 @@ class MediaService:
         if not media:
             raise Exception(f"Media with id {media_id} not found")
         return media
+
+    @staticmethod
+    def get_most_recent(db: Session, user: User) -> Media:
+        return db.query(Media).filter(Media.user == user).order_by(Media.created_at.desc()).first()
 
     @staticmethod
     def update(db: Session, media_id: str, user_id: str, data: CreateMediaData) -> Media:
@@ -92,8 +97,12 @@ class MediaService:
 
         # Also put the file to S3
         s3_key = str(uuid.uuid4())
+        logger.info(f"Content Type {upload_file.content_type}")
+
         boto3.client("s3").upload_fileobj(io.BytesIO(contents), Properties.media_bucket, s3_key,
-                                          ExtraArgs={'ACL': 'public-read'})
+                                          ExtraArgs={'ACL': 'public-read',
+                                                     'ContentType': upload_file.content_type}
+                                          )
 
         media_object = Media(json_ipfs_hash=json_ipfs_hash, media_ipfs_hash=media_ipfs_hash,
                              filename=filename, s3_key=s3_key, user_id=user.id, name=data.name,

@@ -50,7 +50,7 @@ def get_recent_media(
         user_id: str = Depends(get_current_user_id)
 ):
     user = UserService.get(db, user_id)
-    media = db.query(Media).filter(Media.user == user).order_by(Media.created_at.desc()).first()
+    media = MediaService.get_most_recent(db, user)
     return MediaView(media)
 
 

@@ -1,4 +1,5 @@
 from app.src.config.database_config import Base
+from app.src.config.parameter_store import Properties
 from app.src.models.helpers import generate_id
 from app.src.models.typedefs.PaymentStatus import PaymentStatus
 from sqlalchemy import (
@@ -80,4 +81,7 @@ class Media(Base, CreatedUpdatedMixin):
     nonce = Column(String)
     token_id = Column(Integer)
     address = Column(String)
+
+    def s3_url(self):
+        return f"https://{Properties.media_bucket}.s3.amazonaws.com/{self.s3_key}"
 
