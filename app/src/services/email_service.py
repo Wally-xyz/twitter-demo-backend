@@ -18,7 +18,7 @@ class EmailService:
         message.dynamic_template_data = {
             'code': code,
             'email': user.email,
-            'url': Properties.frontend_url + f'?code={code}&email={user.email}',
+            'url': Properties.frontend_url + f'/enter-code?code={code}&email={user.email}',
         }
         sg = SendGridAPIClient(Properties.sendgrid_api_key)
         sg.send(message)
