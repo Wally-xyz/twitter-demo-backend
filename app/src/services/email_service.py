@@ -33,7 +33,7 @@ class EmailService:
         message.template_id = 'd-b52b1d6cefff4b41a0850eabdb82ef5e'
         message.dynamic_template_data = {
             'etherscan_url': media_view.etherscan_url,
-            'img_url': 'https://www.wallylabs.xyz/logo.png',
+            'img_url': media_view.s3_url,
             'opensea_url':  media_view.opensea_url,
             'url': Properties.frontend_url + f'?step=5'
         }
