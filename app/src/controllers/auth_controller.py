@@ -25,7 +25,7 @@ logger = LoggerConfig(__name__).get()
 kms_client = boto3.client("kms")
 
 
-def render(user: User, access_token: str):
+def render(user: User, access_token: str) -> UserLoginResponse:
     return {"user": UserView(user), "access_token": access_token}
 
 
