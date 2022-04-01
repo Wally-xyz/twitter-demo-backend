@@ -22,8 +22,8 @@ class PaymentService:
         db.add(payment)
         db.commit()
         db.refresh(payment)
-        success_url = Properties.frontend_url + f'?success=True'
-        cancel_url = Properties.frontend_url + f'?success=False'
+        success_url = Properties.frontend_url + f'/mint?success=True'
+        cancel_url = Properties.frontend_url + f'/purchase?success=False'
         checkout_session = stripe.checkout.Session.create(
             customer_email=user.email,
             line_items=[
@@ -35,6 +35,7 @@ class PaymentService:
                     'currency': 'usd'
                 },
             ],
+            allow_promotion_codes=True,
             mode='payment',
             success_url=success_url,
             cancel_url=success_url if user.admin else cancel_url,
