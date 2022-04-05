@@ -45,8 +45,8 @@ def mint(
     if not payment and not user.admin:
         raise Exception("No record of payment. If you believe this is in error, contact us at: ...")
 
-    # Hit Wallet Backend and call mint endpoint
-    # Determine what we want to store from their response
+    # TODO V2 - Hit Wallet Backend and call mint endpoint
+    # TODO V2 - Determine what we want to store from their response
 
     db.commit()
     if payment:
