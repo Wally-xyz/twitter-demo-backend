@@ -27,7 +27,7 @@ kms_client = boto3.client("kms")
 
 
 @router.post("/refresh", response_model=UserLoginResponse)
-def create_or_resend_code(
+def refresh_token(
         user_id: str = Depends(get_current_user_id),
         db: Session = Depends(get_db),
         access_token: Optional[str] = None,
