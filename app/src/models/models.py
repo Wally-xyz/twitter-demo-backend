@@ -24,15 +24,6 @@ class CreatedUpdatedMixin(object):
     )
 
 
-class ABI(Base, CreatedUpdatedMixin):
-    __tablename__ = "abi"
-    id = Column(String, default=lambda: generate_id("abi"), primary_key=True, index=True, autoincrement=False)
-    data = Column(String)
-    contract_id = Column(String)
-    default_metadata_hash = Column(String)
-    address = Column(String)
-
-
 class User(Base, CreatedUpdatedMixin):
     __tablename__ = "users"
     id = Column(String, default=lambda: generate_id("u"), primary_key=True, index=True, autoincrement=False)

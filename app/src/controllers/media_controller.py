@@ -25,6 +25,7 @@ def upload_to_ipfs(
         user_id: str = Depends(get_current_user_id)
 ):
     user = UserService.get(db, user_id)
+    # Determine how much of this call should hit the Wallet API
     media = MediaService.upload_to_ipfs(db, user, upload_file, CreateMediaData(name, description))
     return MediaView(media)
 
@@ -64,33 +65,3 @@ def get_media_by_id(
     if media.user_id != user_id:
         raise Exception("Unauthorized")
     return MediaView(media)
-
-#
-# @router.put("/{media_id}")
-# def update_media(
-#         media_id: str,
-#         req: CreateMediaRequest,
-#         db: Session = Depends(get_db),
-#         user_id: str = Depends(get_current_user_id)
-# ):
-#     media = MediaService.update(db, media_id, user_id, req.to_data())
-#     return MediaView(media)
-# 
-
-# Authenticated
-# @router.put("/{media_id}")
-# def associate(
-#         media_id: str,
-#         name: Optional[str] = None,
-#         description: Optional[str] = None,
-#         db: Session = Depends(get_db)
-# ):
-#     media_object = db.query(Media).filter(Media.id == media_id).first()
-#     if name:
-#         media_object.name = name
-#     if description:
-#         media_object.description = description
-#     db.commit()
-#     db.refresh(media_object)
-# 
-#     return MediaView(media_object)
