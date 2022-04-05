@@ -25,7 +25,7 @@ def upload_to_ipfs(
         user_id: str = Depends(get_current_user_id)
 ):
     user = UserService.get(db, user_id)
-    # Determine how much of this call should hit the Wallet API
+    # TODO V2 - Determine how much of this call should hit the Wallet API
     media = MediaService.upload_to_ipfs(db, user, upload_file, CreateMediaData(name, description))
     return MediaView(media)
 

@@ -58,7 +58,7 @@ def verify_email(
 ):
     user = UserService.get_by_email(db, email)
     if user.verification_code == code:
-        # Hit Wallet Backend to create user on their end
+        # TODO V2 - Hit Wallet Backend to create user on their end
         user.verified = True
         db.commit()
         access_token = AuthJWT().create_access_token(subject=user.id, expires_time=timedelta(minutes=60))

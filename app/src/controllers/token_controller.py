@@ -35,7 +35,7 @@ def sign_message(
 ):
     user = UserService.get(db, user_id)
 
-    # Hit wallet backend to get signed message
+    # TODO V2 - Hit wallet backend to get signed message
     signed_msg = "signed message from Wallet" # Should return it in the format I want
 
     return {'result': signed_msg}
