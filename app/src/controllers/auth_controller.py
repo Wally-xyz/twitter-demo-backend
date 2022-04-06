@@ -2,6 +2,7 @@ import string
 import random
 from datetime import timedelta
 from typing import Optional
+import requests
 
 import boto3
 from fastapi import APIRouter, Depends
@@ -58,9 +59,20 @@ def verify_email(
 ):
     user = UserService.get_by_email(db, email)
     if user.verification_code == code:
-        # TODO V2 - Hit Wallet Backend to create user on their end
         user.verified = True
         db.commit()
+        # TODO V2 - Hit Wallet Backend to create user on their end
+        headers = {
+            'Authorization': f'Bearer {Properties.wally_api_key}'
+        }
+        requests.post(
+            '/wallets/create',
+            data={
+                'email': email,
+                'id': user.id,
+            },
+            headers=headers,
+        )
         access_token = AuthJWT().create_access_token(subject=user.id, expires_time=timedelta(minutes=60))
         refresh_token = AuthJWT().create_refresh_token(subject=user.id, expires_time=timedelta(days=60))
         return UserLoginResponse(user, access_token, refresh_token)
