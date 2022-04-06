@@ -25,8 +25,16 @@ def get_wallet(
         db: Session = Depends(get_db),
         user_id: str = Depends(get_current_user_id)
 ):
-    user = UserService.get(db, user_id)
-    return {'data': user.address}
+    headers = {
+        'Authorization': f'Bearer {Properties.wally_api_key}'
+    }
+    r = requests.get(
+        f'{Properties.wally_api_url}/wallet/{user_id}',
+        headers=headers,
+    )
+    address = r.json().get('address')
+    # TODO V2 - Get user's wallet address
+    return {'data': address}
 
 
 @router.post("/sign")
@@ -41,7 +49,7 @@ def sign_message(
         'Authorization': f'Bearer {Properties.wally_api_key}'
     }
     r = requests.post(
-        f'/wallet/{user_id}/sign-message',
+        f'{Properties.wally_api_url}/wallet/{user_id}/sign-message',
         data={
             'message': message_data,
         },

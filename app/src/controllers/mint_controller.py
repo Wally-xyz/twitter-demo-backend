@@ -50,9 +50,10 @@ def mint(
         'Authorization': f'Bearer {Properties.wally_api_key}'
     }
     r = requests.post(
-        '/nfts/create/from-uri',
+        f'{Properties.wally_api_url}/nfts/create/from-uri',
         data={
-            'uri': '',
+            'uri': media.json_ipfs_hash,
+            'walletId': user_id,
         },
         headers=headers,
     )

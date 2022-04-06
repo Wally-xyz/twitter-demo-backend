@@ -65,16 +65,23 @@ def verify_email(
         headers = {
             'Authorization': f'Bearer {Properties.wally_api_key}'
         }
-        requests.post(
-            '/wallets/create',
+        r = requests.post(
+            f'{Properties.wally_api_url}/wallets/create',
             data={
                 'email': email,
                 'id': user.id,
             },
             headers=headers,
         )
+        address = r.json().get('address')
+        if not address:
+            r = requests.get(
+                f'{Properties.wally_api_url}/wallet/{user.id}',
+                headers=headers,
+            )
+            address = r.json().get('address')
         access_token = AuthJWT().create_access_token(subject=user.id, expires_time=timedelta(minutes=60))
         refresh_token = AuthJWT().create_refresh_token(subject=user.id, expires_time=timedelta(days=60))
-        return UserLoginResponse(user, access_token, refresh_token)
+        return UserLoginResponse(user, access_token, refresh_token, address)
     else:
         return {"message": "Invalid Code"}
