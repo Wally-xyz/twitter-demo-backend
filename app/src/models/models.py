@@ -24,12 +24,22 @@ class CreatedUpdatedMixin(object):
     )
 
 
+# Deprecated but leaving here so we don't erase data
+class ABI(Base, CreatedUpdatedMixin):
+    __tablename__ = "abi"
+    id = Column(String, default=lambda: generate_id("abi"), primary_key=True, index=True, autoincrement=False)
+    data = Column(String)
+    contract_id = Column(String)
+    default_metadata_hash = Column(String)
+    address = Column(String)
+
+
 class User(Base, CreatedUpdatedMixin):
     __tablename__ = "users"
     id = Column(String, default=lambda: generate_id("u"), primary_key=True, index=True, autoincrement=False)
-    username = Column(String)  # Currently unused
+    username = Column(String)
     address = Column(String)
-    private_key = Column(String)
+    private_key = Column(String)  # Deprecated but leaving here so we don't erase data
     email = Column(String, index=True, unique=True)
     verified = Column(Boolean, default=False)
     verification_code = Column(String)
