@@ -1,5 +1,6 @@
 import os
 from typing import Optional
+import requests
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -45,6 +46,17 @@ def mint(
     if not payment and not user.admin:
         raise Exception("No record of payment. If you believe this is in error, contact us at: ...")
 
+    headers = {
+        'Authorization': f'Bearer {Properties.wally_api_key}'
+    }
+    r = requests.post(
+        '/nfts/create/from-uri',
+        data={
+            'uri': '',
+        },
+        headers=headers,
+    )
+    resource_id = r.json().get('id')
     # TODO V2 - Hit Wallet Backend and call mint endpoint
     # TODO V2 - Determine what we want to store from their response
 

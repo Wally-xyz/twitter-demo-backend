@@ -1,8 +1,10 @@
 import boto3
+import requests
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.src.config.database_config import get_db
+from app.src.config.parameter_store import Properties
 from app.src.config.logger_config import LoggerConfig
 from app.src.services.auth_service import get_current_user_id
 from pydantic import BaseModel
@@ -35,8 +37,18 @@ def sign_message(
 ):
     user = UserService.get(db, user_id)
 
+    headers = {
+        'Authorization': f'Bearer {Properties.wally_api_key}'
+    }
+    r = requests.post(
+        f'/wallet/{user_id}/sign-message',
+        data={
+            'message': message_data,
+        },
+        headers=headers,
+    )
     # TODO V2 - Hit wallet backend to get signed message
-    signed_msg = "signed message from Wallet" # Should return it in the format I want
+    signed_msg = r.json().get('signature') # Should return it in the format I want
 
     return {'result': signed_msg}
 
