@@ -31,7 +31,7 @@ class PaymentService:
                     'name': 'Wally NFT',
                     'quantity': 1,
                     'images': [media.s3_url()],
-                    'amount': 9999,
+                    'amount': 4999,
                     'currency': 'usd'
                 },
             ],
