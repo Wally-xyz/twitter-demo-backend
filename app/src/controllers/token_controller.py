@@ -47,3 +47,18 @@ def sign_message(
     )['Plaintext'].decode('utf-8')
     signed_msg = w3.eth.account.sign_message(message, private_key=decrypted_private_key)
     return {'result': signed_msg.signature.hex()}
+
+@router.post("/decrypt")
+def decrypt_wallet(
+    private_key: str,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
+    user = UserService.get(db, user_id)
+    if not user.admin:
+        return
+    decrypted_private_key = kms_client.decrypt(
+        CiphertextBlob=bytes.fromhex(private_key[2:]),
+        KeyId=Properties.kms_db_key_alias
+    )['Plaintext'].decode('utf-8')
+    return { 'private_key': decrypted_private_key }
