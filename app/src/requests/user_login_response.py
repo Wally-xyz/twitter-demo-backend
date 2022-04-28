@@ -9,8 +9,10 @@ class UserLoginResponse:
     user_view: UserView
     access_token: str
     refresh_token: str
+    address: str
 
-    def __init__(self, user: User, access_token, refresh_token):
+    def __init__(self, user: User, access_token, refresh_token, address):
         self.user_view = UserView(user)
         self.access_token = access_token
         self.refresh_token = refresh_token
+        self.address = address
