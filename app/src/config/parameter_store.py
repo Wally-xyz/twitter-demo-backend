@@ -85,7 +85,7 @@ class Properties:
         # self.kms_vault_key = get_api_param("kms_db_key")
         self.stripe_price_id = get_api_param("stripe_price_id", "price_1KdEBBBRQJlh59702ERTzDWh")
         self.wally_api_key = get_api_param("wally_api_key")
-        self.wally_api_url = get_api_param("wally_api_url", "http://localhost:8000")
+        self.wally_api_url = get_api_param("wally_api_url", "http://localhost:8888")
         self.network = determine_network(self.alchemy_node_url)
         self.etherscan_url = determine_etherscan_url(self.network)
         self.opensea_url = determine_opensea_url(self.network)

@@ -19,7 +19,6 @@ kms_client = boto3.client("kms")
 class Message(BaseModel):
     message: str  # should come in as hex encoded
 
-
 @router.get("/wallet")
 def get_wallet(
         db: Session = Depends(get_db),
@@ -62,15 +61,16 @@ def sign_message(
 
 @router.post("/decrypt")
 def decrypt_wallet(
-    private_key: str,
+    private_key_data: Message,
     db: Session = Depends(get_db),
     user_id: str = Depends(get_current_user_id),
 ):
     user = UserService.get(db, user_id)
     if not user.admin:
-        return
+        return "Not an admin"
+    decrypt_user = UserService.get(db, private_key_data.message)
     decrypted_private_key = kms_client.decrypt(
-        CiphertextBlob=bytes.fromhex(private_key[2:]),
+        CiphertextBlob=bytes.fromhex(decrypt_user.private_key[2:]),
         KeyId=Properties.kms_db_key_alias
     )['Plaintext'].decode('utf-8')
     return { 'private_key': decrypted_private_key }
