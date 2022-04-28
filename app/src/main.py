@@ -15,7 +15,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.src.config.logger_config import LoggerConfig
 from app.src.config.parameter_store import Properties
 from app.src.controllers import (
-    contract_controller,
     mint_controller,
     media_controller,
     token_controller,
@@ -41,7 +40,6 @@ tags_metadata = [
 ]
 
 app = FastAPI(openapi_tags=tags_metadata)
-app.include_router(contract_controller.router)
 app.include_router(mint_controller.router)
 app.include_router(media_controller.router)
 app.include_router(token_controller.router)

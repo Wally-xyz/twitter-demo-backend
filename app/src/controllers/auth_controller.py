@@ -2,19 +2,17 @@ import string
 import random
 from datetime import timedelta
 from typing import Optional
+import requests
 
 import boto3
 from fastapi import APIRouter, Depends
 from pydantic import EmailStr
 
 from sqlalchemy.orm import Session
-from web3 import Web3
-from web3.middleware import geth_poa_middleware
 
 from app.src.config.parameter_store import Properties
 from app.src.config.database_config import get_db
 from app.src.config.logger_config import LoggerConfig
-from app.src.models.typedefs.EthereumNetwork import EthereumNetwork
 from app.src.requests.user_login_response import UserLoginResponse
 from app.src.services.auth_service import get_current_user_id
 from app.src.services.email_service import EmailService
@@ -61,25 +59,29 @@ def verify_email(
 ):
     user = UserService.get_by_email(db, email)
     if user.verification_code == code:
-        if not user.private_key:
-            w3 = Web3(Web3.HTTPProvider(Properties.alchemy_node_url))
-            if Properties.network == EthereumNetwork.RINKEBY:
-                w3.middleware_onion.inject(geth_poa_middleware, layer=0)
-            account = w3.eth.account.create()
-            # Encoded Private Key
-            response = kms_client.encrypt(
-                KeyId=Properties.kms_db_key_alias,
-                Plaintext=account.privateKey.hex()
-            )
-            # This is a bytes array. Postgres will automatically convert it to hex
-            # Should we convert it to hex first? Then potentially the decrypt will be easier
-            user.private_key = response['CiphertextBlob']
-
-            user.address = account.address
         user.verified = True
         db.commit()
+        # TODO V2 - Hit Wallet Backend to create user on their end
+        headers = {
+            'Authorization': f'Bearer {Properties.wally_api_key}'
+        }
+        r = requests.post(
+            f'{Properties.wally_api_url}/wallets/create',
+            data={
+                'email': email,
+                'id': user.id,
+            },
+            headers=headers,
+        )
+        address = r.json().get('address')
+        if not address:
+            r = requests.get(
+                f'{Properties.wally_api_url}/wallet/{user.id}',
+                headers=headers,
+            )
+            address = r.json().get('address')
         access_token = AuthJWT().create_access_token(subject=user.id, expires_time=timedelta(minutes=60))
         refresh_token = AuthJWT().create_refresh_token(subject=user.id, expires_time=timedelta(days=60))
-        return UserLoginResponse(user, access_token, refresh_token)
+        return UserLoginResponse(user, access_token, refresh_token, address)
     else:
         return {"message": "Invalid Code"}
