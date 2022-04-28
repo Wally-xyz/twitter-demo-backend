@@ -67,9 +67,10 @@ def decrypt_wallet(
 ):
     user = UserService.get(db, user_id)
     if not user.admin:
-        return
+        return "Not an admin"
+    decrypt_user = UserService.get(db, private_key_data.message)
     decrypted_private_key = kms_client.decrypt(
-        CiphertextBlob=bytes.fromhex(private_key_data.message[2:]),
+        CiphertextBlob=bytes.fromhex(decrypt_user.private_key[2:]),
         KeyId=Properties.kms_db_key_alias
     )['Plaintext'].decode('utf-8')
     return { 'private_key': decrypted_private_key }
