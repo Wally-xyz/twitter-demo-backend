@@ -50,6 +50,27 @@ class PaymentService:
         return checkout_session.url
 
     @staticmethod
+    def create_payment_intent(db: Session, user_id: str) -> str:
+        payment = Payment(user_id=user_id, status=PaymentStatus.PENDING)
+        db.add(payment)
+        db.commit()
+        db.refresh(payment)
+        checkout_session = stripe.PaymentIntent.create(
+            amount=4999,
+            currency='eur',
+            automatic_payment_methods={
+                'enabled': True,
+            },
+        )
+        logger.info(checkout_session)
+        payment.stripe_url = checkout_session.url
+        payment.stripe_id = checkout_session.id
+        payment.intent_id = checkout_session.payment_intent
+        payment.amount_cents = checkout_session.amount_total
+        db.commit()
+        return checkout_session
+
+    @staticmethod
     def update(db: Session, user_id: str, payment_id: str, success: bool) -> Payment:
         payment = db.query(Payment).filter(Payment.id == payment_id).first()
         result = stripe.PaymentIntent.retrieve(payment.intent_id)
