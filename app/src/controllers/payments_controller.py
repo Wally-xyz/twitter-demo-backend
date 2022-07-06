@@ -48,4 +48,4 @@ def create_payment(
             'clientSecret': intent['client_secret']
         }
     except Exception as e:
-        return jsonify(error=str(e)), 403
+        raise Exception("Unable to create payment intent")
