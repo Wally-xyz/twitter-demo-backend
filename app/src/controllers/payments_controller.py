@@ -35,3 +35,17 @@ def record_payment(
     # If success, allow the user to continue?
     # Do some stuff
     return {"Redirect result": success}
+
+@router.post('/create-payment-intent')
+def create_payment(
+        user_id: str = Depends(get_current_user_id),
+        db: Session = Depends(get_db)
+):
+    try:
+        # Create a PaymentIntent with the order amount and currency
+        intent = PaymentService.create_payment_intent(db=db, user_id=user_id)
+        return {
+            'clientSecret': intent['client_secret']
+        }
+    except Exception as e:
+        raise Exception("Unable to create payment intent")
