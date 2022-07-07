@@ -57,16 +57,14 @@ class PaymentService:
         db.refresh(payment)
         checkout_session = stripe.PaymentIntent.create(
             amount=4999,
-            currency='eur',
+            currency='usd',
             automatic_payment_methods={
                 'enabled': True,
             },
         )
         logger.info(checkout_session)
-        payment.stripe_url = checkout_session.url
         payment.stripe_id = checkout_session.id
-        payment.intent_id = checkout_session.payment_intent
-        payment.amount_cents = checkout_session.amount_total
+        payment.amount_cents = checkout_session.amount
         db.commit()
         return checkout_session
 
