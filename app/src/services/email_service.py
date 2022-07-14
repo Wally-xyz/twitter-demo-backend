@@ -11,10 +11,10 @@ class EmailService:
     @staticmethod
     def send_verification_code(user: User, code: str):
         message = Mail(
-            from_email=('hello@wallylabs.xyz', 'Wally Labs'),
+            from_email=('hello@wallylabs.xyz', 'EasyMint'),
             to_emails=user.email)
         message.reply_to = 'mayank@wallylabs.xyz'
-        message.template_id = 'd-ec91b40826a54c2d9d324da8341461fb'
+        message.template_id = 'd-342acb7bf8d4406b81549c08af79b5db'
         message.dynamic_template_data = {
             'code': code,
             'email': user.email,
