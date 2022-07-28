@@ -19,7 +19,7 @@ logger = LoggerConfig(__name__).get()
 @router.post("/upload", response_model=MediaView)
 def upload_to_ipfs(
         name: str,
-        description: str = 'Minted through https://www.wallylabs.xyz',
+        description: str = 'Minted through https://www.wally.xyz',
         upload_file: UploadFile = File(...),
         db: Session = Depends(get_db),
         user_id: str = Depends(get_current_user_id)

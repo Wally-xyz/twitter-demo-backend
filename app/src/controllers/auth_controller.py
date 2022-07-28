@@ -66,7 +66,7 @@ def verify_email(
             'Authorization': f'Bearer {Properties.wally_api_key}'
         }
         r = requests.post(
-            f'{Properties.wally_api_url}/wallets/create',
+            f'{Properties.wally_api_url}/wallets',
             data={
                 'email': email,
                 'id': user.id,
