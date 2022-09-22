@@ -56,6 +56,8 @@ origins = [
     "https://wallet-frontend-stage.vercel.app",
     "https://demo-stage.wallylabs.xyz",
     "https://demo.wallylabs.xyz",
+    "https://demo.wally.xyz",
+    "https://demo-stage.wally.xyz"
 ]
 
 origins_regex = 'https://.*\-wallyxyz.vercel\.app'
